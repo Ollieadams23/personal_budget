@@ -17,13 +17,12 @@
             <div class="sidebar">
                 <div class="sidebar-item">
                     <h2>Categories</h2>
-                    <ul>
-                        <li>Groceries</li>
-                        <li>Transport</li>
-                        <li>Entertainment</li>
-                        <li>Bills</li>
-                        <li>Savings</li>
+                    <ul id="envelopes">
                     </ul>
+                    <div id="add-envelope">
+                        <input type="text" id="envelope-name" placeholder="New category">
+                        <input type="text" id="envelope-amount" placeholder="Amount">
+                        <button id="add-envelope-button" onclick="addEnvelope()">Add</button>
                 </div>
                 <div class="sidebar-item">
                     <h2>Expenses</h2>
@@ -91,6 +90,7 @@
             </div>
         </div>
     </div>
+    <script type="text/javascript" src="src/script.js"></script>
+
 </body>
-<script src="script.js"></script>
 </html>
