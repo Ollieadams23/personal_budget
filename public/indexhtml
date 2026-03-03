@@ -1,0 +1,96 @@
+<!DOCTYPE html5>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Budget</h1>
+            <p>Track your expenses</p>
+        </div>
+        <div class="main">
+            <div class="sidebar">
+                <div class="sidebar-item">
+                    <h2>Categories</h2>
+                    <ul>
+                        <li>Groceries</li>
+                        <li>Transport</li>
+                        <li>Entertainment</li>
+                        <li>Bills</li>
+                        <li>Savings</li>
+                    </ul>
+                </div>
+                <div class="sidebar-item">
+                    <h2>Expenses</h2>
+                    <ul>
+                        <li>Coffee</li>
+                        <li>Tea</li>
+                        <li>Milk</li>
+                        <li>Food</li>
+                        <li>Entertainment</li>
+                    </ul>
+                </div>
+                <div class="sidebar-item">
+                    <h2>Income</h2>
+                    <ul>
+                        <li>Salary</li>
+                        <li>Rent</li>
+                        <li>Utilities</li>
+                        <li>Interest</li>
+                        <li>Savings</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="content-item">
+                    <h2>Groceries</h2>
+                    <p>Coffee: $10</p>
+                    <p>Tea: $5</p>
+                    <p>Milk: $2</p>
+                    <p>Food: $3</p>
+                    <p>Entertainment: $1</p>
+                </div>
+                <div class="content-item">
+                    <h2>Transport</h2>
+                    <p>Coffee: $10</p>
+                    <p>Tea: $5</p>
+                    <p>Milk: $2</p>
+                    <p>Food: $3</p>
+                    <p>Entertainment: $1</p>
+                </div>
+                <div class="content-item">
+                    <h2>Entertainment</h2>
+                    <p>Coffee: $10</p>
+                    <p>Tea: $5</p>
+                    <p>Milk: $2</p>
+                    <p>Food: $3</p>
+                    <p>Entertainment: $1</p>
+                </div>
+                <div class="content-item">
+                    <h2>Bills</h2>
+                    <p>Coffee: $10</p>
+                    <p>Tea: $5</p>
+                    <p>Milk: $2</p>
+                    <p>Food: $3</p>
+                    <p>Entertainment: $1</p>
+                </div>
+                <div class="content-item">
+                    <h2>Savings</h2>
+                    <p>Coffee: $10</p>
+                    <p>Tea: $5</p>
+                    <p>Milk: $2</p>
+                    <p>Food: $3</p>
+                    <p>Entertainment: $1</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="script.js"></script>
+</html>
