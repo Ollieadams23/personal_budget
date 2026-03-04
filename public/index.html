@@ -1,99 +1,40 @@
-<!DOCTYPE html5>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-        <link rel="stylesheet" href="/css/styles.css">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget</title>
-
+    <title>Personal Budget Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Budget</h1>
-            <p>Track your expenses</p>
-        </div>
-        <div class="main">
-            <div class="sidebar">
-                <div class="sidebar-item">
-                    <h2>Categories</h2>
-                    
-                    <h3>All Envelopes (from API):</h3>
-                    <ul id="envelope-list"></ul>
-                    <div id="add-envelope">
-                        <input type="text" id="envelope-name" placeholder="New category">
-                        <input type="text" id="envelope-amount" tooltip="Invalid entry" placeholder="Amount">
-                        <button id="add-envelope-button" onclick="addEnvelope()">Add</button>
-                </div>
-                <div class="sidebar-item">
-                    <h2>Expenses</h2>
-                    <ul>
-                        <li>Coffee</li>
-                        <li>Tea</li>
-                        <li>Milk</li>
-                        <li>Food</li>
-                        <li>Entertainment</li>
-                    </ul>
-                </div>
-                <div class="sidebar-item">
-                    <h2>Income</h2>
-                    <ul>
-                        <li>Salary</li>
-                        <li>Rent</li>
-                        <li>Utilities</li>
-                        <li>Interest</li>
-                        <li>Savings</li>
-                    </ul>
-                </div>
+    <header class="main-header">
+        <h1>Personal Budget Dashboard</h1>
+        <p>Track and manage your envelopes</p>
+    </header>
+    <main class="main-content">
+        <section class="dashboard-section">
+            <div class="form-card">
+                <h2>Add Envelope</h2>
+                <form onsubmit="event.preventDefault(); addEnvelope();">
+                    <label for="envelope-name">Envelope Name</label>
+                    <input type="text" id="envelope-name" placeholder="e.g. Groceries">
+                    <label for="envelope-amount">Budget Amount</label>
+                    <input type="text" id="envelope-amount" placeholder="e.g. 100">
+                    <span class="amounterror">Please enter a valid number</span>
+                    <button id="add-envelope-button" type="submit">Add Envelope</button>
+                </form>
             </div>
-
-            <div class="content">
-                <div class="content-item">
-                    <h2>Groceries</h2>
-                    <p>Coffee: $10</p>
-                    <p>Tea: $5</p>
-                    <p>Milk: $2</p>
-                    <p>Food: $3</p>
-                    <p>Entertainment: $1</p>
-                </div>
-                <div class="content-item">
-                    <h2>Transport</h2>
-                    <p>Coffee: $10</p>
-                    <p>Tea: $5</p>
-                    <p>Milk: $2</p>
-                    <p>Food: $3</p>
-                    <p>Entertainment: $1</p>
-                </div>
-                <div class="content-item">
-                    <h2>Entertainment</h2>
-                    <p>Coffee: $10</p>
-                    <p>Tea: $5</p>
-                    <p>Milk: $2</p>
-                    <p>Food: $3</p>
-                    <p>Entertainment: $1</p>
-                </div>
-                <div class="content-item">
-                    <h2>Bills</h2>
-                    <p>Coffee: $10</p>
-                    <p>Tea: $5</p>
-                    <p>Milk: $2</p>
-                    <p>Food: $3</p>
-                    <p>Entertainment: $1</p>
-                </div>
-                <div class="content-item">
-                    <h2>Savings</h2>
-                    <p>Coffee: $10</p>
-                    <p>Tea: $5</p>
-                    <p>Milk: $2</p>
-                    <p>Food: $3</p>
-                    <p>Entertainment: $1</p>
-                </div>
+            <div class="envelope-list-card">
+                <h2>Envelopes</h2><button id="Edit-Envelopes">Edit</button>
+            
+                <ul id="envelope-list"></ul>
             </div>
-        </div>
-    </div>
-    <span id="custom-tooltip" style="display:none; position:absolute; background:#333; color:#fff; padding:5px; border-radius:4px; z-index:1000;"></span>
-    <script type="text/javascript" src="src/script.js"></script>
-
+        </section>
+    </main>
+    <footer class="main-footer">
+        <span>&copy; 2026 Personal Budget App</span>
+    </footer>
+    <span id="custom-tooltip"></span>
+    <script src="/src/script.js"></script>
 </body>
 </html>

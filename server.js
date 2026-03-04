@@ -5,8 +5,11 @@ const path = require('path');
 const port = 3000;
 
 
+
 // Serve static files from public
 app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from css
+app.use('/css', express.static(path.join(__dirname, 'css')));
 // Serve static files from src
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
@@ -56,13 +59,13 @@ app.post('/envelopes', (req, res) => {
 });
 
 
-//get envelopes
+//get all envelopes
 app.get('/envelopes', (req, res) => {
     res.json(envelopes);
 });
 
 
-// GET endpoint to retrieve all envelopes
+// GET endpoint to retrieve one envelope by category
 app.get('/envelopes/:catagory', (req, res) => {
     if (req.params.catagory) {
         const catagory = req.params.catagory;

@@ -1,9 +1,126 @@
+
 body {
-    background-color: rgb(241, 183, 183);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
 }
 
+.main-header {
+    background: #2c3e50;
+    color: #fff;
+    padding: 24px 0;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+}
+.main-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+}
+.main-header p {
+    margin: 8px 0 0 0;
+    font-size: 1.2rem;
+    color: #bdc3c7;
+}
 
-#envelope-amount:hover{
+.main-content {
+    max-width: 900px;
+    margin: 32px auto;
+    padding: 0 16px;
+}
+
+.dashboard-section {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.form-card {
+    flex: 1 1 320px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    padding: 24px;
+    margin-bottom: 32px;
+}
+.form-card h2 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+.form-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.form-card label {
+    font-weight: 500;
+}
+.form-card input[type="text"] {
+    padding: 8px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+}
+.form-card .amounterror {
+    color: #e74c3c;
+    font-size: 0.95rem;
+    display: none;
+}
+.form-card button {
+    background: #2980b9;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 0;
+    font-size: 1.1rem;
     cursor: pointer;
+    margin-top: 8px;
+}
+
+.envelope-list-card {
+    flex: 2 1 480px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    padding: 24px;
+    margin-bottom: 32px;
+}
+.envelope-list-card h2 {
+    display: flex;
+    justify-content: center;
+    margin-top: 0;
+    color: #2c3e50;
+}
+.envelope-list-card ul {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-footer {
+    background: #2c3e50;
+    color: #fff;
+    text-align: center;
+    padding: 16px 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: 32px;
+}
+.main-footer span {
+    font-size: 1rem;
+}
+
+#custom-tooltip {
+    display: none;
+    position: absolute;
+    background: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    z-index: 1000;
 }
 

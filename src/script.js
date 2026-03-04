@@ -109,28 +109,65 @@ function addEnvelope() {
     }
     if (errorSpan) errorSpan.style.display = 'none';
     envelopeAmountInput.style.backgroundColor = '';
-    envelopes[envelopeName] = parseFloat(envelopeAmount);
     document.getElementById('envelope-name').value = '';
     envelopeAmountInput.value = '';
-    addEnvelopeToList(envelopeName, envelopes[envelopeName]);
-    console.log(envelopes);
+    addEnvelopeToAPI(envelopeName, parseFloat(envelopeAmount));
 }
 
 
 
 
 
-// Tooltip function to show messages to the user
-function showTooltip(message, x, y) {
-    const tooltip = document.getElementById('add-envelope-button');
-    tooltip.textContent = message;
-    tooltip.style.left = x + 'px';
-    tooltip.style.top = y + 'px';
-    tooltip.style.display = 'block';
-    setTimeout(() => {
-        tooltip.style.display = 'none';
-    }, 2000);
+
+// Add envelope using API
+function addEnvelopeToAPI(title, budget) {
+    fetch('/envelopes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, budget })
+    })
+    .then(response => {
+        if (response.ok) {
+            fetchAndRenderEnvelopes();
+        } else {
+            response.json().then(data => alert(data.error || 'Failed to add envelope'));
+        }
+    });
 }
+
+function fetchAndRenderEnvelopes() {
+    fetch('/envelopes')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('envelope-list');
+            if (list) {
+                list.innerHTML = '';
+                data.forEach(env => {
+                    const item = document.createElement('li');
+                    item.textContent = `${env.title}: $${env.budget} `;
+                    // Add delete button using API
+                    const br = document.createElement('br');
+                    item.appendChild(br);
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.onclick = function() {
+                        fetch(`/envelopes/${env.id}`, { method: 'DELETE' })
+                            .then(response => {
+                                if (response.ok) {
+                                    fetchAndRenderEnvelopes();
+                                } else {
+                                    alert('Failed to delete envelope');
+                                }
+                            });
+                    };
+                    item.appendChild(deleteBtn);
+                    list.appendChild(item);
+                });
+            }
+        });
+}
+
+window.addEventListener('DOMContentLoaded', fetchAndRenderEnvelopes);
 
 
 
