@@ -29,10 +29,42 @@ app.get('/', (req, res) => {
 });
 
 
-// GET endpoint to retrieve all envelopes
-app.get('/envelopes', (req, res) => {
-    res.json(envelopes);
+// DELETE endpoint to remove an envelope by id
+app.delete('/envelopes/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = envelopes.findIndex(env => env.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Envelope not found.' });
+    }
+    totalBudget -= envelopes[index].budget;
+    envelopes.splice(index, 1);
+    res.status(204).send();
 });
+
+
+//post request to create envelope
+app.post('/envelopes', (req, res) => {
+    const { title, budget } = req.body;
+    if (!title || typeof budget !== 'number' || budget < 0) {
+        return res.status(400).json({ error: 'Invalid envelope data.' });
+    }
+    const id = envelopes.length ? envelopes[envelopes.length - 1].id + 1 : 1;
+    const newEnvelope = { id, title, budget };
+    envelopes.push(newEnvelope);
+    totalBudget += budget;
+    res.status(201).render('envelopes', { envelopes });
+});
+
+
+// GET endpoint to retrieve all envelopes
+app.get('/envelopes/:catagory', (req, res) => {
+    if (req.params.catagory) {
+        const catagory = req.params.catagory;
+        const envelope = envelopes.find(env => env.title === catagory);
+        res.json(envelope ? envelope : { error: 'Category not found.' });
+    }else{
+    res.json(envelopes);
+}});
 
 // POST endpoint to create a new envelope
 app.post('/envelopes', (req, res) => {

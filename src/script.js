@@ -1,3 +1,36 @@
+// Fetch and display envelopes from API
+window.addEventListener('DOMContentLoaded', function() {
+    function fetchAndRenderEnvelopes() {
+        fetch('/envelopes')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('envelope-list');
+                if (list) {
+                    list.innerHTML = '';
+                    data.forEach(env => {
+                        const item = document.createElement('li');
+                        item.textContent = `${env.title}: $${env.budget} `;
+                        // Add delete button
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.onclick = function() {
+                            fetch(`/envelopes/${env.id}`, { method: 'DELETE' })
+                                .then(response => {
+                                    if (response.ok) {
+                                        fetchAndRenderEnvelopes();
+                                    } else {
+                                        alert('Failed to delete envelope');
+                                    }
+                                });
+                        };
+                        item.appendChild(deleteBtn);
+                        list.appendChild(item);
+                    });
+                }
+            });
+    }
+    fetchAndRenderEnvelopes();
+});
 // Custom tooltip for envelope-name input
 window.addEventListener('DOMContentLoaded', function() {
     const envelopeInput = document.getElementById('envelope-name');
@@ -85,13 +118,6 @@ function addEnvelope() {
 
 
 
-function envelopeList() {
-    const envelopesList = document.getElementById('envelopes');
-    envelopesList.innerHTML = '';
-    for (const envelope in envelopes) {
-        addEnvelopeToList(envelope, envelopes[envelope]);
-    }
-}
 
 
 // Tooltip function to show messages to the user
@@ -108,4 +134,3 @@ function showTooltip(message, x, y) {
 
 
 
-window.onload = envelopeList;
