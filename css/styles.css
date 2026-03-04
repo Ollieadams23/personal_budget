@@ -1,0 +1,9 @@
+body {
+    background-color: rgb(241, 183, 183);
+}
+
+
+#envelope-amount:hover{
+    cursor: pointer;
+}
+

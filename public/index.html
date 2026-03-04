@@ -1,11 +1,12 @@
 <!DOCTYPE html5>
 <html lang="en">
 <head>
+        <link rel="stylesheet" href="/css/styles.css">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budget</title>
 
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
@@ -21,7 +22,7 @@
                     </ul>
                     <div id="add-envelope">
                         <input type="text" id="envelope-name" placeholder="New category">
-                        <input type="text" id="envelope-amount" placeholder="Amount">
+                        <input type="text" id="envelope-amount" tooltip="Invalid entry" placeholder="Amount">
                         <button id="add-envelope-button" onclick="addEnvelope()">Add</button>
                 </div>
                 <div class="sidebar-item">
@@ -90,6 +91,7 @@
             </div>
         </div>
     </div>
+    <span id="custom-tooltip" style="display:none; position:absolute; background:#333; color:#fff; padding:5px; border-radius:4px; z-index:1000;"></span>
     <script type="text/javascript" src="src/script.js"></script>
 
 </body>

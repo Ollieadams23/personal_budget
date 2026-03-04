@@ -1,3 +1,31 @@
+// Custom tooltip for envelope-name input
+window.addEventListener('DOMContentLoaded', function() {
+    const envelopeInput = document.getElementById('envelope-name');
+    const amountInput = document.getElementById('envelope-amount');
+    const tooltip = document.getElementById('custom-tooltip');
+    if (envelopeInput && tooltip) {
+        envelopeInput.addEventListener('mouseover', function(e) {
+            tooltip.textContent = "Enter a unique envelope name";
+            tooltip.style.left = (e.pageX + 10) + 'px';
+            tooltip.style.top = (e.pageY + 10) + 'px';
+            tooltip.style.display = 'block';
+        });
+        envelopeInput.addEventListener('mouseout', function() {
+            tooltip.style.display = 'none';
+        });
+    }
+    if (amountInput && tooltip) {
+        amountInput.addEventListener('mouseover', function(e) {
+            tooltip.textContent = "Enter a valid amount";
+            tooltip.style.left = (e.pageX + 10) + 'px';
+            tooltip.style.top = (e.pageY + 10) + 'px';
+            tooltip.style.display = 'block';
+        });
+        amountInput.addEventListener('mouseout', function() {
+            tooltip.style.display = 'none';
+        });
+    }
+});
 
 
 // envelopes object to hold the budget for each category
@@ -10,28 +38,74 @@ const envelopes = {
 };
 
 
-function addEnvelope() {
-    const envelopeName = document.getElementById('envelope-name').value;
-    const envelopeAmount = document.getElementById('envelope-amount').value;
-    envelopes[envelopeName] = parseFloat(envelopeAmount); // add the new envelope to the envelopes object
-    document.getElementById('envelope-name').value = ''; // clear the input field
-    document.getElementById('envelope-amount').value = ''; // clear the amount field
+function addEnvelopeToList(name, amount) {
     const listItem = document.createElement('li');
-    listItem.textContent = envelopeName + ': $' + envelopes[envelopeName];
+    listItem.textContent = name + ': $' + amount;
+    listItem.id = 'envelope-' + name;
+
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.onclick = function() {
+        delete envelopes[name];
+        listItem.remove();
+        console.log(envelopes);
+    };
+
+    listItem.appendChild(deleteButton);
     document.getElementById('envelopes').appendChild(listItem);
+}
+
+
+function addEnvelope() {
+    const envelopeName = document.getElementById('envelope-name').value.trim();
+    const envelopeAmountInput = document.getElementById('envelope-amount');
+    const envelopeAmount = envelopeAmountInput.value.trim();
+    const errorSpan = document.querySelector('.amount-error');
+    if (!envelopeName || !envelopeAmount || isNaN(envelopeAmount)) {
+        if (errorSpan) errorSpan.style.display = 'inline';
+        let flashes = 0;
+        const flashRed = () => {
+            envelopeAmountInput.style.backgroundColor = flashes % 2 === 0 ? 'red' : '';
+            flashes++;
+            if (flashes < 6) {
+                setTimeout(flashRed, 150);
+            }
+        };
+        flashRed();
+        return;
+    }
+    if (errorSpan) errorSpan.style.display = 'none';
+    envelopeAmountInput.style.backgroundColor = '';
+    envelopes[envelopeName] = parseFloat(envelopeAmount);
+    document.getElementById('envelope-name').value = '';
+    envelopeAmountInput.value = '';
+    addEnvelopeToList(envelopeName, envelopes[envelopeName]);
     console.log(envelopes);
 }
 
 
 
 function envelopeList() {
-    // loop through the envelopes object
+    const envelopesList = document.getElementById('envelopes');
+    envelopesList.innerHTML = '';
     for (const envelope in envelopes) {
-        const listItem = document.createElement('li');
-        listItem.textContent = envelope + ': $' + envelopes[envelope];
-        document.getElementById('envelopes').appendChild(listItem);
+        addEnvelopeToList(envelope, envelopes[envelope]);
     }
-};
+}
+
+
+// Tooltip function to show messages to the user
+function showTooltip(message, x, y) {
+    const tooltip = document.getElementById('add-envelope-button');
+    tooltip.textContent = message;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+    tooltip.style.display = 'block';
+    setTimeout(() => {
+        tooltip.style.display = 'none';
+    }, 2000);
+}
+
 
 
 window.onload = envelopeList;
