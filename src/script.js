@@ -85,7 +85,7 @@ function addEnvelopeToList(name, amount) {
     };
 
     listItem.appendChild(deleteButton);
-    document.getElementById('envelopes').appendChild(listItem);
+    document.getElementById('envelope-list').appendChild(listItem);
 }
 
 
