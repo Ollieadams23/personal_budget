@@ -90,26 +90,47 @@ function addEnvelopeToList(name, amount) {
 
 
 function addEnvelope() {
-    const envelopeName = document.getElementById('envelope-name').value.trim();
+    const envelopeNameInput = document.getElementById('envelope-name');
+    const envelopeName = envelopeNameInput.value.trim();
     const envelopeAmountInput = document.getElementById('envelope-amount');
     const envelopeAmount = envelopeAmountInput.value.trim();
-    const errorSpan = document.querySelector('.amount-error');
-    if (!envelopeName || !envelopeAmount || isNaN(envelopeAmount)) {
-        if (errorSpan) errorSpan.style.display = 'inline';
-        let flashes = 0;
-        const flashRed = () => {
-            envelopeAmountInput.style.backgroundColor = flashes % 2 === 0 ? 'red' : '';
-            flashes++;
-            if (flashes < 6) {
-                setTimeout(flashRed, 150);
-            }
-        };
-        flashRed();
+    const errorSpan = document.querySelector('.amounterror');
+    let flashesName = 0;
+    let flashesAmount = 0;
+    if (!envelopeName || !envelopeAmount || isNaN(envelopeAmount)) {// Show error message
+        if (errorSpan) errorSpan.style.display = 'inline';// Highlight empty fields
+        // Flash envelope name if empty
+        if (!envelopeName) {// Flashing logic for envelope name input
+            const flashName = () => {// Alternate background color to red
+                envelopeNameInput.style.backgroundColor = flashesName % 2 === 0 ? 'red' : '';// Increment flash count
+                flashesName++;// Continue flashing for a few cycles
+                if (flashesName < 6) {// Schedule next flash
+                    setTimeout(flashName, 150);// Reset background color after flashing
+                } else {//
+                    envelopeNameInput.style.backgroundColor = '';// Reset background color after flashing
+                }
+            };
+            flashName();
+        }
+        // Flash amount if invalid
+        if (!envelopeAmount || isNaN(envelopeAmount)) {
+            const flashAmount = () => {
+                envelopeAmountInput.style.backgroundColor = flashesAmount % 2 === 0 ? 'red' : '';
+                flashesAmount++;
+                if (flashesAmount < 6) {
+                    setTimeout(flashAmount, 150);
+                } else {
+                    envelopeAmountInput.style.backgroundColor = '';
+                }
+            };
+            flashAmount();
+        }
         return;
     }
     if (errorSpan) errorSpan.style.display = 'none';
+    envelopeNameInput.style.backgroundColor = '';
     envelopeAmountInput.style.backgroundColor = '';
-    document.getElementById('envelope-name').value = '';
+    envelopeNameInput.value = '';
     envelopeAmountInput.value = '';
     addEnvelopeToAPI(envelopeName, parseFloat(envelopeAmount));
 }

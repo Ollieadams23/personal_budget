@@ -102,6 +102,24 @@ app.put('/envelopes/:id', (req, res) => {
     envelopes[index].title = title;
     envelopes[index].budget = budget;
     res.status(204).send(envelopes);
+
+});
+
+
+//endpoint to update an envelopes ballance
+app.put('/envelopes/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = envelopes.findIndex(env => env.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Envelope not found.' });
+    }
+    const { title, budget } = req.body;
+    if (!title || typeof budget !== 'number' || budget < 0) {
+        return res.status(400).json({ error: 'Invalid envelope data.' });
+    }
+    envelopes[index].title = title;
+    envelopes[index].budget = budget;
+    res.status(204).send(envelopes);
 });
 
 
