@@ -289,5 +289,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Load transfer modal HTML dynamically
+window.addEventListener('DOMContentLoaded', function() {
+    fetch('/transfer-modal.html')
+        .then(response => response.text())
+        .then(html => {
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = html;
+            document.body.appendChild(modalContainer);
+        });
+});
+
 
 
