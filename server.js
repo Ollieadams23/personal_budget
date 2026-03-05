@@ -92,6 +92,33 @@ app.post('/envelopes', (req, res) => {
 });
 
 
+//endpoint to take a given amount and evenly distribute it across all envelopes adding to its value using params
+app.post('/envelopes/distribute/:amount', (req, res) => {
+        console.log('Distribute request received. Amount:', req.params.amount);
+        console.log('Budgets before:', envelopes.map(e => ({ title: e.title, budget: e.budget })));
+    const amount = parseFloat(req.params.amount);
+    if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ error: 'Invalid amount.' });
+    }
+    // Calculate per-envelope share to 2 decimals
+    const perEnvelope = Math.floor((amount / envelopes.length) * 100) / 100;
+    let distributed = perEnvelope * envelopes.length;
+    let remainder = Math.round((amount - distributed) * 100) / 100;
+    envelopes.forEach((env, idx) => {
+        env.budget += perEnvelope;
+    });
+    // Add remainder to the last envelope only
+    if (envelopes.length > 0) {
+        envelopes[envelopes.length - 1].budget += remainder;
+    }
+    // Round all budgets to 2 decimals for display
+    envelopes.forEach(env => {
+        env.budget = Math.round(env.budget * 100) / 100;
+    });
+    res.status(200).json(envelopes);
+    console.log('Budgets after:', envelopes.map(e => ({ title: e.title, budget: e.budget })));
+});
+
 //transfer money between envelopes using params
 app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
     const fromId = parseInt(req.params.fromId);

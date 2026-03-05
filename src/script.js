@@ -205,33 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Handle income form submission and update envelope using /envelopes/:id/income endpoint
 document.addEventListener('DOMContentLoaded', function() {
-    const incomeForm = document.getElementById('income-form');
-    if (incomeForm) {
-        incomeForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const detail = document.getElementById('income-detail').value.trim();
-            const amount = parseFloat(document.getElementById('income-amount').value);
-            const envelopeId = document.getElementById('income-envelope').value;
-            if (!detail || isNaN(amount) || !envelopeId) {
-                alert('Please fill out all fields with valid values.');
-                return;
-            }
-            // Use new /envelopes/:id/income endpoint
-            fetch(`/envelopes/${envelopeId}/income`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, detail })
-            })
-            .then(res => {
-                if (res.ok) {
-                    $('#addIncomeModal').modal('hide');
-                    if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
-                } else {
-                    res.json().then(data => alert(data.error || 'Failed to add income.'));
-                }
-            });
-        });
-    }
+    // ...existing code...
 });
 
 // Show modal when Transfer is clicked
@@ -355,6 +329,57 @@ document.getElementById('add-income-link').addEventListener('click', function(e)
                         option.value = env.id;
                         option.textContent = env.title;
                         select.appendChild(option);
+                    });
+                }
+                // Remove all previous submit event listeners
+                const incomeForm = document.getElementById('income-form');
+                if (incomeForm) {
+                    const newForm = incomeForm.cloneNode(true);
+                    incomeForm.parentNode.replaceChild(newForm, incomeForm);
+                    newForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const detail = document.getElementById('income-detail').value.trim();
+                        const amount = parseFloat(document.getElementById('income-amount').value);
+                        const envelopeId = document.getElementById('income-envelope').value;
+                        const distribute = document.getElementById('distribute-income').checked;
+                        if (!detail || isNaN(amount) || amount <= 0) {
+                            alert('Please fill out all fields with valid values.');
+                            return;
+                        }
+                        if (distribute) {
+                            // Use distribute endpoint
+                            fetch(`/envelopes/distribute/${amount}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' }
+                            })
+                            .then(res => {
+                                if (res.ok) {
+                                    $('#addIncomeModal').modal('hide');
+                                    if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                                } else {
+                                    res.json().then(data => alert(data.error || 'Failed to distribute income.'));
+                                }
+                            });
+                        } else {
+                            if (!envelopeId) {
+                                alert('Please select an envelope.');
+                                return;
+                            }
+                            // Use new /envelopes/:id/income endpoint
+                            fetch(`/envelopes/${envelopeId}/income`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ amount, detail })
+                            })
+                            .then(res => {
+                                if (res.ok) {
+                                    $('#addIncomeModal').modal('hide');
+                                    if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                                } else {
+                                    res.json().then(data => alert(data.error || 'Failed to add income.'));
+                                }
+                            });
+                        }
                     });
                 }
                 $('#addIncomeModal').modal('show');
