@@ -1,3 +1,84 @@
+/* Bootstrap menu icon button */
+.menu-icon {
+    position: absolute;
+    left: 12px;
+    top: 24px;
+    z-index: 200;
+    background: #fff;
+    border: 2px solid #2c3e50;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    box-shadow: 2px 2px 8px rgba(44,62,80,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    width: 48px;
+}
+.menu-icon:focus {
+    outline: 2px solid #2980b9;
+}
+.menu-dash {
+    display: block;
+    width: 26px;
+    height: 4px;
+    background: #2c3e50;
+    margin: 4px 0;
+    border-radius: 2px;
+}
+/* Left-side absolute nav bar */
+.main-nav {
+    position: absolute;
+    left: 0;
+    top: 134px;
+    height: calc(100vh - 134px);
+    width: 180px;
+    background: #fff;
+    border-right: 2px solid #2c3e50;
+    box-shadow: 2px 0 8px rgba(44,62,80,0.08);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 32px;
+}
+.main-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+.main-nav li {
+    margin-bottom: 18px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.nav-link {
+    display: block;
+    width: 120px;
+    padding: 10px 0;
+    background: #2980b9;
+    color: #fff;
+    border: 2px solid #2c3e50;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+}
+.nav-link:hover {
+    background: #2c3e50;
+    color: #fff;
+}
+
+body {
+    margin-left: 180px;
+}
 
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
@@ -31,6 +112,7 @@ body {
 
 .dashboard-section {
     display: flex;
+    flex-direction: column;
     gap: 32px;
     flex-wrap: wrap;
 }
@@ -77,7 +159,7 @@ body {
 }
 
 .envelope-list-card {
-    flex: 2 1 480px;
+    flex: 2 1 400px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(44,62,80,0.08);
@@ -123,4 +205,6 @@ body {
     border-radius: 4px;
     z-index: 1000;
 }
+
+
 

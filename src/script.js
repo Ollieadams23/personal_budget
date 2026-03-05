@@ -145,22 +145,7 @@ function fetchAndRenderEnvelopes() {
                 data.forEach(env => {
                     const item = document.createElement('li');
                     item.textContent = `${env.title}: $${env.budget} `;
-                    // Add delete button using API
-                    const br = document.createElement('br');
-                    item.appendChild(br);
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.textContent = 'Delete';
-                    deleteBtn.onclick = function() {
-                        fetch(`/envelopes/${env.id}`, { method: 'DELETE' })
-                            .then(response => {
-                                if (response.ok) {
-                                    fetchAndRenderEnvelopes();
-                                } else {
-                                    alert('Failed to delete envelope');
-                                }
-                            });
-                    };
-                    item.appendChild(deleteBtn);
+                
                     list.appendChild(item);
                 });
             }
