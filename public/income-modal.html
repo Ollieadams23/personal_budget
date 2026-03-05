@@ -1,0 +1,33 @@
+<!-- Income Modal HTML -->
+<div class="modal fade" id="addIncomeModal" tabindex="-1" role="dialog" aria-labelledby="addIncomeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addIncomeModalLabel">Add Income</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="income-form">
+                    <div class="form-group">
+                        <label for="income-detail">Detail</label>
+                        <input type="text" class="form-control" id="income-detail" placeholder="e.g. Paycheck">
+                    </div>
+                    <div class="form-group">
+                        <label for="income-amount">Amount</label>
+                        <input type="number" class="form-control" id="income-amount" placeholder="e.g. 500">
+                    </div>
+                    <div class="form-group">
+                        <label for="income-envelope">Envelope</label>
+                        <select class="form-control" id="income-envelope">
+                            <option value="">Select envelope</option>
+                            <!-- Envelope options will be populated by JS -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Income</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
