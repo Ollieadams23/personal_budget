@@ -44,18 +44,18 @@ app.delete('/envelopes/:id', (req, res) => {
 });
 
 
-//post request to create envelope
-app.post('/envelopes', (req, res) => {
-    const { title, budget } = req.body;
-    if (!title || typeof budget !== 'number' || budget < 0) {
-        return res.status(400).json({ error: 'Invalid envelope data.' });
-    }
-    const id = envelopes.length ? envelopes[envelopes.length - 1].id + 1 : 1;
-    const newEnvelope = { id, title, budget };
-    envelopes.push(newEnvelope);
-    totalBudget += budget;
-    res.status(201).json(newEnvelope);
-});
+// //post request to create envelope
+// app.post('/envelopes', (req, res) => {
+//     const { title, budget } = req.body;
+//     if (!title || typeof budget !== 'number' || budget < 0) {
+//         return res.status(400).json({ error: 'Invalid envelope data.' });
+//     }
+//     const id = envelopes.length ? envelopes[envelopes.length - 1].id + 1 : 1;
+//     const newEnvelope = { id, title, budget };
+//     envelopes.push(newEnvelope);
+//     totalBudget += budget;
+//     res.status(201).json(newEnvelope);
+// });
 
 
 //get all envelopes
@@ -76,6 +76,11 @@ app.get('/envelopes/:catagory', (req, res) => {
 // POST endpoint to create a new envelope
 app.post('/envelopes', (req, res) => {
     const { title, budget } = req.body;
+    //see if title exists in envelopes array
+    const existingEnvelope = envelopes.find(env => env.title.toLowerCase() === title.toLowerCase());
+    if (existingEnvelope) {
+        return res.status(400).json({ error: 'Envelope with this title already exists.' });
+    }
     if (!title || typeof budget !== 'number' || budget < 0) {
         return res.status(400).json({ error: 'Invalid envelope data.' });
     }
@@ -87,20 +92,22 @@ app.post('/envelopes', (req, res) => {
 });
 
 
-//update envelope budget
-app.put('/envelopes/:id', (req, res) => {
-    const id = parseInt(req.params.id);
+//update envelope name and budget using params
+app.put('/envelopes/:id/:title/:value', (req, res) => {
+    const id = parseInt(req.params.id);//turns the string into an integer
+    const value = parseFloat(req.params.value);//turns the string into a float
+    const title = req.params.title;
     const index = envelopes.findIndex(env => env.id === id);
     if (index === -1) {
         return res.status(404).json({ error: 'Envelope not found.' });
     }
-    const { title, budget } = req.body;
-    if (!title || typeof budget !== 'number' || budget < 0) {
-        return res.status(400).json({ error: 'Invalid envelope data.' });
+    
+    if (typeof value !== 'number' || value < 0) {
+        return res.status(400).json({ error: 'amount is Not a number.' });
     }
     envelopes[index].title = title;
-    envelopes[index].budget = budget;
-    res.status(204).send(envelopes);
+    envelopes[index].budget = value;
+    res.status(200).json(envelopes);
 
 });
 
