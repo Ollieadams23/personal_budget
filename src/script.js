@@ -300,5 +300,77 @@ window.addEventListener('DOMContentLoaded', function() {
         });
 });
 
+// Utility to load a modal HTML file and append to body if not already present
+function loadModal(modalId, modalFile) {
+    return new Promise((resolve) => {
+        if (document.getElementById(modalId)) {
+            resolve();
+        } else {
+            fetch(`/${modalFile}`)
+                .then(response => response.text())
+                .then(html => {
+                    const modalContainer = document.createElement('div');
+                    modalContainer.innerHTML = html;
+                    document.body.appendChild(modalContainer);
+                    resolve();
+                });
+        }
+    });
+}
+
+// Show Expense Modal and populate dropdown
+document.getElementById('add-expense-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadModal('addExpenseModal', 'expense-modal.html').then(() => {
+        fetch('/envelopes')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('expense-envelope');
+                if (select) {
+                    select.innerHTML = '<option value="">Select envelope</option>';
+                    data.forEach(env => {
+                        const option = document.createElement('option');
+                        option.value = env.id;
+                        option.textContent = env.title;
+                        select.appendChild(option);
+                    });
+                }
+                $('#addExpenseModal').modal('show');
+            });
+    });
+});
+
+// Show Income Modal and populate dropdown
+document.getElementById('add-income-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadModal('addIncomeModal', 'income-modal.html').then(() => {
+        fetch('/envelopes')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('income-envelope');
+                if (select) {
+                    select.innerHTML = '<option value="">Select envelope</option>';
+                    data.forEach(env => {
+                        const option = document.createElement('option');
+                        option.value = env.id;
+                        option.textContent = env.title;
+                        select.appendChild(option);
+                    });
+                }
+                $('#addIncomeModal').modal('show');
+            });
+    });
+});
+
+// Show Edit Envelopes Modal
+document.querySelector('.nav-link').addEventListener('click', function(e) {
+    if (e.target.textContent === 'Edit Envelopes') {
+        e.preventDefault();
+        loadModal('editEnvelopesModal', 'edit-envelopes-modal.html').then(() => {
+            $('#editEnvelopesModal').modal('show');
+        });
+    }
+});
+
 
 
