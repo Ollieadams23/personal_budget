@@ -92,6 +92,33 @@ app.post('/envelopes', (req, res) => {
 });
 
 
+//transfer money between envelopes using params
+app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
+    const fromId = parseInt(req.params.fromId);
+    const toId = parseInt(req.params.toId);
+    const amount = parseFloat(req.params.amount);
+    if (fromId === toId) {
+        return res.status(400).json({ error: 'Cannot transfer money to the same envelope.' });
+    }
+    const fromEnvelope = envelopes.find(env => env.id === fromId);
+    if (!fromEnvelope) {
+        return res.status(404).json({ error: 'From envelope not found.' });
+    }
+    const toEnvelope = envelopes.find(env => env.id === toId);
+    if (!toEnvelope) {
+        return res.status(404).json({ error: 'To envelope not found.' });
+    }
+    if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ error: 'Invalid transfer amount.' });
+    }
+    if (fromEnvelope.budget < amount) {
+        return res.status(400).json({ error: 'Insufficient funds in source envelope.' });
+    }
+    fromEnvelope.budget -= amount;
+    toEnvelope.budget += amount;
+    res.status(200).json({ fromEnvelope, toEnvelope });
+});
+
 //update envelope name and budget using params
 app.put('/envelopes/:id/:title/:value', (req, res) => {
     const id = parseInt(req.params.id);//turns the string into an integer

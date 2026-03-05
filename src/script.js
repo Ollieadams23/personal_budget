@@ -234,5 +234,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Show modal when Transfer is clicked
+document.getElementById('transfer-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    // Fetch envelopes and populate both dropdowns
+    fetch('/envelopes')
+        .then(response => response.json())
+        .then(data => {
+            const fromSelect = document.getElementById('transfer-from-envelope');
+            const toSelect = document.getElementById('transfer-to-envelope');
+            fromSelect.innerHTML = '<option value="">Select envelope</option>';
+            toSelect.innerHTML = '<option value="">Select envelope</option>';
+            data.forEach(env => {
+                const optionFrom = document.createElement('option');
+                optionFrom.value = env.id;
+                optionFrom.textContent = env.title;
+                fromSelect.appendChild(optionFrom);
+                const optionTo = document.createElement('option');
+                optionTo.value = env.id;
+                optionTo.textContent = env.title;
+                toSelect.appendChild(optionTo);
+            });
+            $('#transferModal').modal('show');
+        });
+});
+
+// Handle transfer form submission using params
+document.addEventListener('DOMContentLoaded', function() {
+    const transferForm = document.getElementById('transfer-form');
+    if (transferForm) {
+        transferForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fromId = document.getElementById('transfer-from-envelope').value;
+            const toId = document.getElementById('transfer-to-envelope').value;
+            const amount = parseFloat(document.getElementById('transfer-amount').value);
+            if (!fromId || !toId || isNaN(amount) || fromId === toId) {
+                alert('Please select two different envelopes and enter a valid amount.');
+                return;
+            }
+            // Call transfer endpoint using params
+            fetch(`/envelopes/transfer/${fromId}/${toId}/${amount}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => {
+                if (res.ok) {
+                    $('#transferModal').modal('hide');
+                    if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                } else {
+                    res.json().then(data => alert(data.error || 'Failed to transfer funds.'));
+                }
+            });
+        });
+    }
+});
+
 
 

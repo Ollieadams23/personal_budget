@@ -24,6 +24,7 @@
             <li><a href="#" class="nav-link">Edit Envelopes</a></li>
             <li><a href="#" class="nav-link" id="add-expense-link">Expenses</a></li>
             <li><a href="#" class="nav-link" id="add-income-link">Income</a></li>
+            <li><a href="#" class="nav-link" id="transfer-link">Transfer</a></li>
         </ul>
     </nav>
     <header class="main-header">
@@ -70,6 +71,42 @@
     </footer>
     <span id="custom-tooltip"></span>
             <!-- Clean Bootstrap Expense Modal -->
+                        <!-- Bootstrap Transfer Modal -->
+                        <div class="modal fade" id="transferModal" tabindex="-1" role="dialog" aria-labelledby="transferModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="transferModalLabel">Transfer Funds</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="transfer-form">
+                                            <div class="form-group">
+                                                <label for="transfer-from-envelope">From Envelope</label>
+                                                <select class="form-control" id="transfer-from-envelope">
+                                                    <option value="">Select envelope</option>
+                                                    <!-- Envelope options will be populated by JS -->
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="transfer-to-envelope">To Envelope</label>
+                                                <select class="form-control" id="transfer-to-envelope">
+                                                    <option value="">Select envelope</option>
+                                                    <!-- Envelope options will be populated by JS -->
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="transfer-amount">Amount</label>
+                                                <input type="number" class="form-control" id="transfer-amount" placeholder="e.g. 10">
+                                            </div>
+                                            <button type="submit" class="btn btn-info">Transfer</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
             <div class="modal fade" id="addExpenseModal" tabindex="-1" role="dialog" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
