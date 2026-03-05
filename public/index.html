@@ -23,7 +23,7 @@
         <ul>
             <li><a href="#" class="nav-link">Edit Envelopes</a></li>
             <li><a href="#" class="nav-link" id="add-expense-link">Expenses</a></li>
-            <li><a href="#" class="nav-link">Income</a></li>
+            <li><a href="#" class="nav-link" id="add-income-link">Income</a></li>
         </ul>
     </nav>
     <header class="main-header">
@@ -102,70 +102,123 @@
                     </div>
                 </div>
             </div>
+            <!-- Bootstrap Income Modal -->
+            <div class="modal fade" id="addIncomeModal" tabindex="-1" role="dialog" aria-labelledby="addIncomeModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addIncomeModalLabel">Add Income</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="income-form">
+                                <div class="form-group">
+                                    <label for="income-detail">Detail</label>
+                                    <input type="text" class="form-control" id="income-detail" placeholder="e.g. Paycheck">
+                                </div>
+                                <div class="form-group">
+                                    <label for="income-amount">Amount</label>
+                                    <input type="number" class="form-control" id="income-amount" placeholder="e.g. 500">
+                                </div>
+                                <div class="form-group">
+                                    <label for="income-envelope">Envelope</label>
+                                    <select class="form-control" id="income-envelope">
+                                        <option value="">Select envelope</option>
+                                        <!-- Envelope options will be populated by JS -->
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-success">Add Income</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <script src="/src/script.js"></script>
         <script>
-                // Show modal when Expenses is clicked
-                document.getElementById('add-expense-link').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // Fetch envelopes and populate dropdown
-                    fetch('/envelopes')
-                        .then(response => response.json())
-                        .then(data => {
-                            const select = document.getElementById('expense-envelope');
-                            select.innerHTML = '<option value="">Select envelope</option>';
-                            data.forEach(env => {
-                                const option = document.createElement('option');
-                                option.value = env.id;
-                                option.textContent = env.title;
-                                select.appendChild(option);
-                            });
-                            $('#addExpenseModal').modal('show');
+            // Show modal when Expenses is clicked
+            document.getElementById('add-expense-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                // Fetch envelopes and populate dropdown
+                fetch('/envelopes')
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('expense-envelope');
+                        select.innerHTML = '<option value="">Select envelope</option>';
+                        data.forEach(env => {
+                            const option = document.createElement('option');
+                            option.value = env.id;
+                            option.textContent = env.title;
+                            select.appendChild(option);
                         });
-                });
-        // Toggle nav visibility on menu icon click
-        document.getElementById('menu-toggle').addEventListener('click', function() {
-            var nav = document.getElementById('side-nav');
-            nav.classList.toggle('hide-nav');
-        });
+                        $('#addExpenseModal').modal('show');
+                    });
+            });
 
-        // Show modal when Edit Envelopes is clicked
-        document.querySelectorAll('.nav-link').forEach(function(link) {
-            if (link.textContent.trim() === 'Edit Envelopes') {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    // Fetch envelopes and populate modal
-                    fetch('/envelopes')
-                        .then(response => response.json())
-                        .then(data => {
-                            const modalList = document.getElementById('modal-envelope-list');
-                            modalList.innerHTML = '';
-                            data.forEach(env => {
-                                const li = document.createElement('li');
-                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                                li.textContent = `${env.title}: $${env.budget}`;
-                                const delBtn = document.createElement('button');
-                                delBtn.className = 'btn btn-danger btn-sm';
-                                delBtn.textContent = 'Delete';
-                                delBtn.onclick = function() {
-                                    fetch(`/envelopes/${env.id}`, { method: 'DELETE' })
-                                        .then(response => {
-                                            if (response.ok) {
-                                                li.remove();
-                                                // Optionally refresh main envelope list
-                                                if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
-                                            } else {
-                                                alert('Failed to delete envelope');
-                                            }
-                                        });
-                                };
-                                li.appendChild(delBtn);
-                                modalList.appendChild(li);
-                            });
-                            $('#editEnvelopesModal').modal('show');
+            // Show modal when Income is clicked
+            document.getElementById('add-income-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                // Fetch envelopes and populate dropdown
+                fetch('/envelopes')
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById('income-envelope');
+                        select.innerHTML = '<option value="">Select envelope</option>';
+                        data.forEach(env => {
+                            const option = document.createElement('option');
+                            option.value = env.id;
+                            option.textContent = env.title;
+                            select.appendChild(option);
                         });
-                });
-            }
-        });
+                        $('#addIncomeModal').modal('show');
+                    });
+            });
+
+            // Toggle nav visibility on menu icon click
+            document.getElementById('menu-toggle').addEventListener('click', function() {
+                var nav = document.getElementById('side-nav');
+                nav.classList.toggle('hide-nav');
+            });
+
+            // Show modal when Edit Envelopes is clicked
+            document.querySelectorAll('.nav-link').forEach(function(link) {
+                if (link.textContent.trim() === 'Edit Envelopes') {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        // Fetch envelopes and populate modal
+                        fetch('/envelopes')
+                            .then(response => response.json())
+                            .then(data => {
+                                const modalList = document.getElementById('modal-envelope-list');
+                                modalList.innerHTML = '';
+                                data.forEach(env => {
+                                    const li = document.createElement('li');
+                                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                    li.textContent = `${env.title}: $${env.budget}`;
+                                    const delBtn = document.createElement('button');
+                                    delBtn.className = 'btn btn-danger btn-sm';
+                                    delBtn.textContent = 'Delete';
+                                    delBtn.onclick = function() {
+                                        fetch(`/envelopes/${env.id}`, { method: 'DELETE' })
+                                            .then(response => {
+                                                if (response.ok) {
+                                                    li.remove();
+                                                    // Optionally refresh main envelope list
+                                                    if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                                                } else {
+                                                    alert('Failed to delete envelope');
+                                                }
+                                            });
+                                    };
+                                    li.appendChild(delBtn);
+                                    modalList.appendChild(li);
+                                });
+                                $('#editEnvelopesModal').modal('show');
+                            });
+                    });
+                }
+            });
         </script>
 </body>
 </html>

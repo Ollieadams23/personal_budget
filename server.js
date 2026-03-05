@@ -1,4 +1,3 @@
-
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -106,23 +105,41 @@ app.put('/envelopes/:id', (req, res) => {
 });
 
 
-//endpoint to update an envelopes ballance
-app.put('/envelopes/:id', (req, res) => {
+
+// POST endpoint to add an expense and update envelope budget using params
+app.post('/envelopes/:id/expenses', (req, res) => {
     const id = parseInt(req.params.id);
-    const index = envelopes.findIndex(env => env.id === id);
-    if (index === -1) {
+    const { amount, detail } = req.body;
+    if (!id || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: 'Invalid expense data.' });
+    }
+    const envIndex = envelopes.findIndex(env => env.id === id);
+    if (envIndex === -1) {
         return res.status(404).json({ error: 'Envelope not found.' });
     }
-    const { title, budget } = req.body;
-    if (!title || typeof budget !== 'number' || budget < 0) {
-        return res.status(400).json({ error: 'Invalid envelope data.' });
+    envelopes[envIndex].budget = parseFloat(envelopes[envIndex].budget) - amount;
+    // Optionally, store expense record here
+    res.status(200).json({ envelope: envelopes[envIndex] });
+});
+
+// POST endpoint to add income and update envelope budget using params
+app.post('/envelopes/:id/income', (req, res) => {
+    const id = parseInt(req.params.id);
+    const { amount, detail } = req.body;
+    if (!id || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: 'Invalid income data.' });
     }
-    envelopes[index].title = title;
-    envelopes[index].budget = budget;
-    res.status(204).send(envelopes);
+    const envIndex = envelopes.findIndex(env => env.id === id);
+    if (envIndex === -1) {
+        return res.status(404).json({ error: 'Envelope not found.' });
+    }
+    envelopes[envIndex].budget = parseFloat(envelopes[envIndex].budget) + amount;
+    // Optionally, store income record here
+    res.status(200).json({ envelope: envelopes[envIndex] });
 });
 
 
+// Start the server
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

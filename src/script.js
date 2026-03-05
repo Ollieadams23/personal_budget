@@ -137,9 +137,6 @@ function addEnvelope() {
 
 
 
-
-
-
 // Add envelope using API
 function addEnvelopeToAPI(title, budget) {
     fetch('/envelopes', {
@@ -174,6 +171,68 @@ function fetchAndRenderEnvelopes() {
 }
 
 window.addEventListener('DOMContentLoaded', fetchAndRenderEnvelopes);
+
+// Handle expense form submission and update envelope using /envelopes/:id/expenses endpoint
+document.addEventListener('DOMContentLoaded', function() {
+    const expenseForm = document.getElementById('expense-form');
+    if (expenseForm) {
+        expenseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const detail = document.getElementById('expense-detail').value.trim();
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const envelopeId = document.getElementById('expense-envelope').value;
+            if (!detail || isNaN(amount) || !envelopeId) {
+                alert('Please fill out all fields with valid values.');
+                return;
+            }
+            // Use new /envelopes/:id/expenses endpoint
+            fetch(`/envelopes/${envelopeId}/expenses`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, detail })
+            })
+            .then(res => {
+                if (res.ok) {
+                    $('#addExpenseModal').modal('hide');
+                    if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                } else {
+                    res.json().then(data => alert(data.error || 'Failed to add expense.'));
+                }
+            });
+        });
+    }
+});
+
+// Handle income form submission and update envelope using /envelopes/:id/income endpoint
+document.addEventListener('DOMContentLoaded', function() {
+    const incomeForm = document.getElementById('income-form');
+    if (incomeForm) {
+        incomeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const detail = document.getElementById('income-detail').value.trim();
+            const amount = parseFloat(document.getElementById('income-amount').value);
+            const envelopeId = document.getElementById('income-envelope').value;
+            if (!detail || isNaN(amount) || !envelopeId) {
+                alert('Please fill out all fields with valid values.');
+                return;
+            }
+            // Use new /envelopes/:id/income endpoint
+            fetch(`/envelopes/${envelopeId}/income`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, detail })
+            })
+            .then(res => {
+                if (res.ok) {
+                    $('#addIncomeModal').modal('hide');
+                    if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                } else {
+                    res.json().then(data => alert(data.error || 'Failed to add income.'));
+                }
+            });
+        });
+    }
+});
 
 
 
