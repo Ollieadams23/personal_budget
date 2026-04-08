@@ -1,0 +1,101 @@
+[33mcommit cd91df9ecf9740aeed13a2b7c853895da69c077c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 22:58:58 2026 +1300
+
+    env file for mogodb
+
+[33mcommit 4be808e1141fd7cc326c0c09d95bfd942cecb51a[m[33m ([m[1;31morigin/master[m[33m)[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 22:21:20 2026 +1300
+
+    added readme
+
+[33mcommit bc7ada6d839331dd0e405e354a5600445eb7b01e[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 22:17:22 2026 +1300
+
+    fixed multiple handlers gewnerating on income spread for envelopes
+
+[33mcommit 94a6dd40e564352d7103a8529d3d8ef6f6a0b8d9[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 21:48:11 2026 +1300
+
+    fixed modal not display bug
+
+[33mcommit 5336396bfbb2b7fed90b019ca53a23ea2bc97477[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 21:43:27 2026 +1300
+
+    all modals move from index
+
+[33mcommit 8a667681142a7c7aa4e81bcc88d74528304ab675[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 21:41:51 2026 +1300
+
+    trasfer modal moved out of indexhtml
+
+[33mcommit 1b14cc9aa82f58b2bf62d246eb029071f62837b0[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 21:37:46 2026 +1300
+
+    added transfer endpoint
+
+[33mcommit 55dd717152fb65372dbe550d161b6dedd1846052[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 21:10:41 2026 +1300
+
+    added put endpoint to update envelopes
+
+[33mcommit 3fb263ba34dadc13fd71599aa65679d4f7af527c[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 19:02:46 2026 +1300
+
+    nav bar functions all working
+
+[33mcommit 0b73730ba1a8e3d2c2905ff14d69102a6f97a91f[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 18:38:51 2026 +1300
+
+    added popup edit windows
+
+[33mcommit b7286cb02b35a4cf1178546597ca469319794c21[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 17:14:52 2026 +1300
+
+    added sidebar
+
+[33mcommit 64b235d2c1f6326c85e2b901def295b2a04bd738[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Thu Mar 5 00:10:20 2026 +1300
+
+    aded styling
+
+[33mcommit cfbcad92d60dcf2d4c2694005ec855470dd8420c[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Wed Mar 4 23:11:27 2026 +1300
+
+    more crud logic
+
+[33mcommit 103d86983a82a04611d28b0eb5ef0243498db27d[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Wed Mar 4 20:11:20 2026 +1300
+
+    added get logic for envelopes
+
+[33mcommit 8d7eb06bfb113da7626e6765b30e48c0fefdae84[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Wed Mar 4 18:58:23 2026 +1300
+
+    added functionailty and css
+
+[33mcommit 3c5ff1b407d439b91bddb08b79b683968fda9554[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Tue Mar 3 23:30:11 2026 +1300
+
+    basic envelope entry
+
+[33mcommit 77d2b37d1dd6488cebf6a2bb8dddd77e8602ab90[m
+Author: ollieadams23 <ollieadams511@gmail.com>
+Date:   Tue Mar 3 21:58:39 2026 +1300
+
+    first commit

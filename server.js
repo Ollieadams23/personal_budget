@@ -121,9 +121,9 @@ app.post('/envelopes/distribute/:amount', (req, res) => {
 
 //transfer money between envelopes using params
 app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
-    const fromId = parseInt(req.params.fromId);
-    const toId = parseInt(req.params.toId);
-    const amount = parseFloat(req.params.amount);
+    const fromId = parseInt(req.params.fromId);//turns the string into an integer
+    const toId = parseInt(req.params.toId);//turns the string into an integer
+    const amount = parseFloat(req.params.amount);//turns the string into a float
     if (fromId === toId) {
         return res.status(400).json({ error: 'Cannot transfer money to the same envelope.' });
     }

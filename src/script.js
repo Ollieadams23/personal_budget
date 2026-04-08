@@ -264,6 +264,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Load transfer modal HTML dynamically
+
+// Load transfer modal HTML dynamically and attach event handler
 window.addEventListener('DOMContentLoaded', function() {
     fetch('/transfer-modal.html')
         .then(response => response.text())
@@ -271,6 +273,34 @@ window.addEventListener('DOMContentLoaded', function() {
             const modalContainer = document.createElement('div');
             modalContainer.innerHTML = html;
             document.body.appendChild(modalContainer);
+
+            // Attach transfer form event handler after modal is loaded
+            const transferForm = document.getElementById('transfer-form');
+            if (transferForm) {
+                transferForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const fromId = document.getElementById('transfer-from-envelope').value;
+                    const toId = document.getElementById('transfer-to-envelope').value;
+                    const amount = parseFloat(document.getElementById('transfer-amount').value);
+                    if (!fromId || !toId || isNaN(amount) || fromId === toId) {
+                        alert('Please select two different envelopes and enter a valid amount.');
+                        return;
+                    }
+                    // Call transfer endpoint using params
+                    fetch(`/envelopes/transfer/${fromId}/${toId}/${amount}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => {
+                        if (res.ok) {
+                            $('#transferModal').modal('hide');
+                            if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                        } else {
+                            res.json().then(data => alert(data.error || 'Failed to transfer funds.'));
+                        }
+                    });
+                });
+            }
         });
 });
 
@@ -309,6 +339,39 @@ document.getElementById('add-expense-link').addEventListener('click', function(e
                         select.appendChild(option);
                     });
                 }
+
+                // Attach expense form event handler after modal is loaded
+                const expenseForm = document.getElementById('expense-form');
+                if (expenseForm) {
+                    // Remove previous event listeners by cloning
+                    const newForm = expenseForm.cloneNode(true);
+                    expenseForm.parentNode.replaceChild(newForm, expenseForm);
+                    newForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const detail = document.getElementById('expense-detail').value.trim();
+                        const amount = parseFloat(document.getElementById('expense-amount').value);
+                        const envelopeId = document.getElementById('expense-envelope').value;
+                        if (!detail || isNaN(amount) || !envelopeId) {
+                            alert('Please fill out all fields with valid values.');
+                            return;
+                        }
+                        // Use new /envelopes/:id/expenses endpoint
+                        fetch(`/envelopes/${envelopeId}/expenses`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ amount, detail })
+                        })
+                        .then(res => {
+                            if (res.ok) {
+                                $('#addExpenseModal').modal('hide');
+                                if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                            } else {
+                                res.json().then(data => alert(data.error || 'Failed to add expense.'));
+                            }
+                        });
+                    });
+                }
+
                 $('#addExpenseModal').modal('show');
             });
     });
@@ -392,6 +455,40 @@ document.querySelector('.nav-link').addEventListener('click', function(e) {
     if (e.target.textContent === 'Edit Envelopes') {
         e.preventDefault();
         loadModal('editEnvelopesModal', 'edit-envelopes-modal.html').then(() => {
+            // Fetch envelopes and populate the modal list with delete buttons
+            function renderEditModalList() {
+                fetch('/envelopes')
+                    .then(response => response.json())
+                    .then(data => {
+                        const modalList = document.getElementById('modal-envelope-list');
+                        if (modalList) {
+                            modalList.innerHTML = '';
+                            data.forEach(env => {
+                                const item = document.createElement('li');
+                                item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                                item.textContent = `${env.title}: $${env.budget}`;
+                                // Add delete button
+                                const deleteBtn = document.createElement('button');
+                                deleteBtn.textContent = 'Delete';
+                                deleteBtn.className = 'btn btn-danger btn-sm';
+                                deleteBtn.onclick = function() {
+                                    fetch(`/envelopes/${env.id}`, { method: 'DELETE' })
+                                        .then(response => {
+                                            if (response.ok) {
+                                                renderEditModalList();
+                                                if (window.fetchAndRenderEnvelopes) window.fetchAndRenderEnvelopes();
+                                            } else {
+                                                alert('Failed to delete envelope');
+                                            }
+                                        });
+                                };
+                                item.appendChild(deleteBtn);
+                                modalList.appendChild(item);
+                            });
+                        }
+                    });
+            }
+            renderEditModalList();
             $('#editEnvelopesModal').modal('show');
         });
     }
