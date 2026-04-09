@@ -108,6 +108,7 @@ body {
     max-width: 900px;
     margin: 32px auto;
     padding: 0 16px;
+
 }
 
 .dashboard-section {
@@ -176,10 +177,21 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
+    flex-wrap: wrap;
     justify-content: space-between;
     list-style: none;
-    padding: 0;
-    margin: 0;
+    padding: 0px;
+    margin: 0px;
+
+}
+
+#envelope-list li{
+    border: 2px solid #bdc3c7;
+    background-color: #5f7cf0;
+    gap: 12px;
+    width: auto;
+    padding: 10px;
+    margin: 6px;
 }
 
 .main-footer {

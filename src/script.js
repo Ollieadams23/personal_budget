@@ -4,10 +4,15 @@ window.addEventListener('DOMContentLoaded', function() {
         fetch('/envelopes')
             .then(response => response.json())
             .then(data => {
+                console.log('Fetched envelopes:', data);// Debug log to check data structure
                 const list = document.getElementById('envelope-list');
                 if (list) {
                     list.innerHTML = '';
+                    if (data.length === 0) {
+                        console.log('No envelopes to display.');// Debug log for empty data case
+                    }
                     data.forEach(env => {
+                        console.log('Rendering envelope:', env);// Debug log for each envelope being rendered
                         const item = document.createElement('li');
                         item.textContent = `${env.title}: $${env.budget} `;
                         // Add delete button
@@ -23,10 +28,15 @@ window.addEventListener('DOMContentLoaded', function() {
                                     }
                                 });
                         };
-                        item.appendChild(deleteBtn);
+                        // item.appendChild(deleteBtn);
                         list.appendChild(item);
                     });
+                } else {
+                    console.log('envelope-list element not found in DOM');
                 }
+            })
+            .catch(err => {
+                console.error('Error fetching envelopes:', err);
             });
     }
     fetchAndRenderEnvelopes();
@@ -71,22 +81,6 @@ const envelopes = {
 };
 
 
-function addEnvelopeToList(name, amount) {
-    const listItem = document.createElement('li');
-    listItem.textContent = name + ': $' + amount;
-    listItem.id = 'envelope-' + name;
-
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.onclick = function() {
-        delete envelopes[name];
-        listItem.remove();
-        console.log(envelopes);
-    };
-
-    listItem.appendChild(deleteButton);
-    document.getElementById('envelope-list').appendChild(listItem);
-}
 
 
 function addEnvelope() {
@@ -153,22 +147,22 @@ function addEnvelopeToAPI(title, budget) {
     });
 }
 
-function fetchAndRenderEnvelopes() {
-    fetch('/envelopes')
-        .then(response => response.json())
-        .then(data => {
-            const list = document.getElementById('envelope-list');
-            if (list) {
-                list.innerHTML = '';
-                data.forEach(env => {
-                    const item = document.createElement('li');
-                    item.textContent = `${env.title}: $${env.budget} `;
+// function fetchAndRenderEnvelopes() {
+//     fetch('/envelopes')
+//         .then(response => response.json())
+//         .then(data => {
+//             const list = document.getElementById('envelope-list');
+//             if (list) {
+//                 list.innerHTML = '';
+//                 data.forEach(env => {
+//                     const item = document.createElement('li');
+//                     item.textContent = `${env.title}: $${env.budget} `;
                 
-                    list.appendChild(item);
-                });
-            }
-        });
-}
+//                     list.appendChild(item);
+//                 });
+//             }
+//         });
+// }
 
 window.addEventListener('DOMContentLoaded', fetchAndRenderEnvelopes);
 
