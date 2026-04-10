@@ -31,6 +31,14 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
+const ledgerUpdate = (outFromEnvelope, inToEnvelope, amount, type) => {
+    if (outFromEnvelope) {
+        outFromEnvelope.ledger.push({ amount: -amount, date: new Date(), description: `Transfer to ${inToEnvelope ? inToEnvelope.title : 'unknown'}`, type: type });
+    }
+    if (inToEnvelope) {
+        inToEnvelope.ledger.push({ amount: amount, date: new Date(), description: `Transfer from ${outFromEnvelope ? outFromEnvelope.title : 'unknown'}`, type: type });
+    }
+};
 
 // DELETE endpoint to remove an envelope by id
 app.delete('/envelopes/:id', (req, res) => {
@@ -146,10 +154,12 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
     toEnvelope.budget += amount;
 
     //write to ledger from envelope
+    const type = 'transfer';
+    const outfromEnvelope = envelopes[fromId];
+    const intoEnvelope = envelopes[toId];
+    ledgerUpdate(outfromEnvelope, intoEnvelope, amount, type);
     
-    envelopes.fromId.ledger.push({ amount: -amount, date: new Date(), description: `Transfer to ${toEnvelope.title}`, type: 'transfer out' });
-    envelopes.toId.ledger.push({ amount: amount, date: new Date(), description: `Transfer from ${fromEnvelope.title}`, type: 'transfer in' });
-    res.status(200).json({ fromEnvelope, toEnvelope, ledger });
+    res.status(200).json({ fromEnvelope, toEnvelope });
 });
 
 //update envelope name and budget using params
@@ -186,6 +196,11 @@ app.post('/envelopes/:id/expenses', (req, res) => {
     }
     envelopes[envIndex].budget = parseFloat(envelopes[envIndex].budget) - amount;
     // Optionally, store expense record here
+    //write to ledger
+    const type = 'expense';
+    const outFromEnvelope = envelopes[envIndex];
+    ledgerUpdate(outFromEnvelope, null, amount, type);
+    
     res.status(200).json({ envelope: envelopes[envIndex] });
 });
 
@@ -201,7 +216,12 @@ app.post('/envelopes/:id/income', (req, res) => {
         return res.status(404).json({ error: 'Envelope not found.' });
     }
     envelopes[envIndex].budget = parseFloat(envelopes[envIndex].budget) + amount;
+
     // Optionally, store income record here
+    const type = 'income';
+    const inToEnvelope = envelopes[envIndex];
+    ledgerUpdate(null, inToEnvelope, amount, type);
+
     res.status(200).json({ envelope: envelopes[envIndex] });
 });
 
