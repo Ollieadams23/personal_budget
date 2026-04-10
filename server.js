@@ -31,12 +31,12 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-const ledgerUpdate = (outFromEnvelope, inToEnvelope, amount, type) => {
+const ledgerUpdate = (outFromEnvelope, inToEnvelope, amount, type, description) => {
     if (outFromEnvelope) {
-        outFromEnvelope.ledger.push({ amount: -amount, date: new Date(), description: `Transfer to ${inToEnvelope ? inToEnvelope.title : 'unknown'}`, type: type });
+        outFromEnvelope.ledger.push({ amount: -amount, date: new Date(), description: description, type: type });
     }
     if (inToEnvelope) {
-        inToEnvelope.ledger.push({ amount: amount, date: new Date(), description: `Transfer from ${outFromEnvelope ? outFromEnvelope.title : 'unknown'}`, type: type });
+        inToEnvelope.ledger.push({ amount: amount, date: new Date(), description: description, type: type });
     }
 };
 
@@ -124,6 +124,15 @@ app.post('/envelopes/distribute/:amount', (req, res) => {
     envelopes.forEach(env => {
         env.budget = Math.round(env.budget * 100) / 100;
     });
+    //write to ledger for distribution
+    const type = 'distribution';
+    const description = `Amount ${perEnvelope} added to all envelopes`;
+    envelopes.forEach((env, idx) => {
+        const outFromEnvelope = null; // No specific envelope is losing money in a distribution
+        const intoEnvelope = envelopes[idx];
+        ledgerUpdate(outFromEnvelope, intoEnvelope, perEnvelope, type, description);
+    });
+
     res.status(200).json(envelopes);
     console.log('Budgets after:', envelopes.map(e => ({ title: e.title, budget: e.budget })));
 });
@@ -155,9 +164,10 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
 
     //write to ledger from envelope
     const type = 'transfer';
+    const description = `Transfer from ${fromEnvelope.title} to ${toEnvelope.title}`;
     const outfromEnvelope = envelopes[fromId];
     const intoEnvelope = envelopes[toId];
-    ledgerUpdate(outfromEnvelope, intoEnvelope, amount, type);
+    ledgerUpdate(outfromEnvelope, intoEnvelope, amount, type, description);
     
     res.status(200).json({ fromEnvelope, toEnvelope });
 });
@@ -199,7 +209,8 @@ app.post('/envelopes/:id/expenses', (req, res) => {
     //write to ledger
     const type = 'expense';
     const outFromEnvelope = envelopes[envIndex];
-    ledgerUpdate(outFromEnvelope, null, amount, type);
+    const description = `Expense from ${outFromEnvelope.title}: ${detail}`;
+    ledgerUpdate(outFromEnvelope, null, amount, type, description);
     
     res.status(200).json({ envelope: envelopes[envIndex] });
 });
@@ -220,7 +231,8 @@ app.post('/envelopes/:id/income', (req, res) => {
     // Optionally, store income record here
     const type = 'income';
     const inToEnvelope = envelopes[envIndex];
-    ledgerUpdate(null, inToEnvelope, amount, type);
+    const description = `Income to ${inToEnvelope.title}: ${detail}`;
+    ledgerUpdate(null, inToEnvelope, amount, type, description);
 
     res.status(200).json({ envelope: envelopes[envIndex] });
 });
