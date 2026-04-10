@@ -16,12 +16,13 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
 
 // Global variables for envelopes and total budget
 let envelopes = [
-    { id: 1, title: "groceries", budget: 0 },
-    { id: 2, title: "transport", budget: 0 },
-    { id: 3, title: "entertainment", budget: 0 },
-    { id: 4, title: "bills", budget: 0 },
-    { id: 5, title: "savings", budget: 0 }
+    { id: 1, title: "groceries", budget: 0, ledger: [] },
+    { id: 2, title: "transport", budget: 0, ledger: [] },
+    { id: 3, title: "entertainment", budget: 0, ledger: [] },
+    { id: 4, title: "bills", budget: 0, ledger: [] },
+    { id: 5, title: "savings", budget: 0, ledger: [] }
 ];
+// Each ledger entry: { amount, date, description, type: 'income' | 'expense' }
 let totalBudget = 0;
 
 app.use(express.json()); // for parsing application/json
@@ -85,7 +86,7 @@ app.post('/envelopes', (req, res) => {
         return res.status(400).json({ error: 'Invalid envelope data.' });
     }
     const id = envelopes.length ? envelopes[envelopes.length - 1].id + 1 : 1;
-    const newEnvelope = { id, title, budget };
+    const newEnvelope = { id, title, budget, ledger: [] };// Initialize ledger for the new envelope
     envelopes.push(newEnvelope);
     totalBudget += budget;
     res.status(201).json(newEnvelope);
@@ -143,7 +144,12 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
     }
     fromEnvelope.budget -= amount;
     toEnvelope.budget += amount;
-    res.status(200).json({ fromEnvelope, toEnvelope });
+
+    //write to ledger from envelope
+    
+    envelopes.fromId.ledger.push({ amount: -amount, date: new Date(), description: `Transfer to ${toEnvelope.title}`, type: 'transfer out' });
+    envelopes.toId.ledger.push({ amount: amount, date: new Date(), description: `Transfer from ${fromEnvelope.title}`, type: 'transfer in' });
+    res.status(200).json({ fromEnvelope, toEnvelope, ledger });
 });
 
 //update envelope name and budget using params

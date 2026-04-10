@@ -1,5 +1,3 @@
-// Fetch and display envelopes from API
-window.addEventListener('DOMContentLoaded', function() {
     function fetchAndRenderEnvelopes() {
         fetch('/envelopes')
             .then(response => response.json())
@@ -28,7 +26,7 @@ window.addEventListener('DOMContentLoaded', function() {
                                     }
                                 });
                         };
-                        // item.appendChild(deleteBtn);
+                        //item.appendChild(deleteBtn);
                         list.appendChild(item);
                     });
                 } else {
@@ -39,8 +37,14 @@ window.addEventListener('DOMContentLoaded', function() {
                 console.error('Error fetching envelopes:', err);
             });
     }
+
+
+// Fetch and display envelopes from API
+window.addEventListener('DOMContentLoaded', function() {
     fetchAndRenderEnvelopes();
 });
+
+
 // Custom tooltip for envelope-name input
 window.addEventListener('DOMContentLoaded', function() {
     const envelopeInput = document.getElementById('envelope-name');
@@ -71,14 +75,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// envelopes object to hold the budget for each category
-const envelopes = {
-    "groceries": 0,
-    "transport": 0,
-    "entertainment": 0,
-    "bills": 0,
-    "savings": 0
-};
+
 
 
 
