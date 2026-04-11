@@ -163,10 +163,12 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
     toEnvelope.budget += amount;
 
     //write to ledger from envelope
+    const fromIdx = envelopes.findIndex(env => env.id === fromId);
+    const toIdx = envelopes.findIndex(env => env.id === toId);
     const type = 'transfer';
     const description = `Transfer from ${fromEnvelope.title} to ${toEnvelope.title}`;
-    const outfromEnvelope = envelopes[fromId];
-    const intoEnvelope = envelopes[toId];
+    const outfromEnvelope = envelopes[fromIdx];
+    const intoEnvelope = envelopes[toIdx];
     ledgerUpdate(outfromEnvelope, intoEnvelope, amount, type, description);
     
     res.status(200).json({ fromEnvelope, toEnvelope });

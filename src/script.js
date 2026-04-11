@@ -37,15 +37,15 @@
         fetch('/envelopes')
             .then(response => response.json())
             .then(data => {
-                console.log('Fetched envelopes:', data);// Debug log to check data structure
+                //console.log('Fetched envelopes:', data);// Debug log to check data structure
                 const list = document.getElementById('envelope-list');
                 if (list) {
                     list.innerHTML = '';
                     if (data.length === 0) {
-                        console.log('No envelopes to display.');// Debug log for empty data case
+                        //console.log('No envelopes to display.');// Debug log for empty data case
                     }
                     data.forEach(env => {
-                        console.log('Rendering envelope:', env);// Debug log for each envelope being rendered
+                        //console.log('Rendering envelope:', env);// Debug log for each envelope being rendered
                         const item = document.createElement('li');
                         item.innerHTML = `<button class="envelope-btn">${env.title}: $${env.budget}</button>`;
                         const envelopeButton = item.querySelector('.envelope-btn');
