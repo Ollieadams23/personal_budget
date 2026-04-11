@@ -1,3 +1,38 @@
+    function showEnvelopeLedgerModal(env) {
+        loadModal('ledgerModal', 'ledger-modal.html').then(() => {
+            const title = document.getElementById('ledgerModalLabel');
+            const ledgerList = document.getElementById('ledger-modal-list');
+
+            if (title) {
+                title.textContent = `${env.title} Ledger`;
+            }
+
+            if (ledgerList) {
+                ledgerList.innerHTML = '';
+
+                if (!Array.isArray(env.ledger) || env.ledger.length === 0) {
+                    const emptyItem = document.createElement('li');
+                    emptyItem.className = 'list-group-item';
+                    emptyItem.textContent = 'No transactions yet.';
+                    ledgerList.appendChild(emptyItem);
+                } else {
+                    env.ledger.forEach(entry => {
+                        const ledgerItem = document.createElement('li');
+                        const amount = Number(entry.amount).toFixed(2);
+                        const date = entry.date ? new Date(entry.date).toLocaleString() : 'No date';
+                        const description = entry.description ? ` - ${entry.description}` : '';
+
+                        ledgerItem.className = 'list-group-item';
+                        ledgerItem.textContent = `$${amount}${description} - ${entry.type} (${date})`;
+                        ledgerList.appendChild(ledgerItem);
+                    });
+                }
+            }
+
+            $('#ledgerModal').modal('show');
+        });
+    }
+
     function fetchAndRenderEnvelopes() {
         fetch('/envelopes')
             .then(response => response.json())
@@ -12,7 +47,12 @@
                     data.forEach(env => {
                         console.log('Rendering envelope:', env);// Debug log for each envelope being rendered
                         const item = document.createElement('li');
-                        item.textContent = `${env.title}: $${env.budget} `;
+                        item.innerHTML = `<button class="envelope-btn">${env.title}: $${env.budget}</button>`;
+                        const envelopeButton = item.querySelector('.envelope-btn');
+                        envelopeButton.onclick = function() {
+                            showEnvelopeLedgerModal(env);
+                        };
+                        
                         // Add delete button
                         const deleteBtn = document.createElement('button');
                         deleteBtn.textContent = 'Delete';

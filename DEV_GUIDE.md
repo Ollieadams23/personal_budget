@@ -16,6 +16,42 @@
   - Endpoint: `/envelopes/distribute/:amount` (POST)
   - Splits amount evenly, remainder to last envelope, adds to existing budgets
 
+## Envelope Ledger System
+
+Each envelope object contains a `ledger` array that records all transactions affecting that envelope. This provides a detailed transaction history for auditing and calculation purposes.
+
+### Envelope Structure Example
+```js
+{
+  id: 1,
+  title: "groceries",
+  budget: 100,
+  ledger: [
+    { amount: 100, date: "2026-04-10T12:00:00Z", description: "Initial deposit", type: "income" },
+    { amount: -20, date: "2026-04-11T09:00:00Z", description: "Supermarket", type: "expense" },
+    { amount: 50, date: "2026-04-11T10:00:00Z", description: "Transfer from savings", type: "transfer in" }
+  ]
+}
+```
+
+### Ledger Entry Fields
+- `amount`: Positive for income, negative for expenses or outgoing transfers.
+- `date`: ISO string or Date object when the transaction occurred.
+- `description`: Short text describing the transaction.
+- `type`: One of `income`, `expense`, `transfer in`, `transfer out`, `distribution`, etc.
+
+### How the Ledger Works
+- **Adding Income:** Adds a positive entry to the ledger and increases the envelope's budget.
+- **Adding Expense:** Adds a negative entry to the ledger and decreases the envelope's budget.
+- **Transfers:** Adds a negative entry to the source envelope's ledger (`transfer out`) and a positive entry to the target envelope's ledger (`transfer in`).
+- **Distribution:** Adds a positive entry to each envelope's ledger with type `distribution`.
+
+The sum of all `amount` values in the ledger should always equal the envelope's current `budget` value.
+
+### Example Usage
+- To view an envelope's transaction history, inspect its `ledger` array.
+- To audit or recalculate the budget, sum all `amount` values in the ledger.
+
 ## Frontend Modal Loading
 - Modals are loaded dynamically from separate HTML files.
 - Event handlers for forms are attached only after modal loads (see `script.js`).

@@ -173,6 +173,14 @@ body {
     margin-top: 0;
     color: #2c3e50;
 }
+
+.envelope-list-card h6 {
+    text-align: center;
+    margin-top: 8px;
+    color: #7f8c8d;
+
+}
+
 .envelope-list-card ul {
     display: flex;
     flex-direction: row;
@@ -192,6 +200,81 @@ body {
     width: auto;
     padding: 10px;
     margin: 6px;
+}
+
+.envelope-btn {
+    background: linear-gradient(135deg, #3f5fd8, #2d8ac7);
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 10px 24px rgba(45, 138, 199, 0.22);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.envelope-btn:hover,
+.envelope-btn:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(45, 138, 199, 0.28);
+    filter: brightness(1.03);
+    outline: none;
+}
+
+#ledgerModal .modal-dialog {
+    max-width: 680px;
+}
+
+#ledgerModal .modal-content {
+    border: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(44, 62, 80, 0.22);
+}
+
+#ledgerModal .modal-header {
+    background: linear-gradient(135deg, #2c3e50, #2980b9);
+    color: #fff;
+    border-bottom: 0;
+    padding: 18px 24px;
+}
+
+#ledgerModal .modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+#ledgerModal .close {
+    color: #fff;
+    opacity: 0.9;
+    text-shadow: none;
+}
+
+#ledgerModal .modal-body {
+    background: #f8fbfd;
+    padding: 20px 24px 24px;
+}
+
+.ledger-modal-list {
+    max-height: 420px;
+    overflow-y: auto;
+    border-radius: 12px;
+}
+
+.ledger-modal-list .list-group-item {
+    border: 1px solid #d9e5ec;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    color: #2c3e50;
+    background: #fff;
+    box-shadow: 0 6px 14px rgba(44, 62, 80, 0.05);
+}
+
+.ledger-modal-list .list-group-item:last-child {
+    margin-bottom: 0;
 }
 
 .main-footer {
