@@ -255,12 +255,15 @@ body {
 #ledgerModal .modal-body {
     background: #f8fbfd;
     padding: 20px 24px 24px;
+    height: 420px;
+    overflow: hidden;
 }
 
 .ledger-modal-list {
-    max-height: 420px;
+    height: 100%;
     overflow-y: auto;
     border-radius: 12px;
+    padding-right: 4px;
 }
 
 .ledger-modal-list .list-group-item {
