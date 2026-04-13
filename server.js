@@ -4,6 +4,9 @@ const path = require('path');
 const port = 3000;
 
 
+// Import the database pool
+const pool = require('./db');
+
 
 // Serve static files from public
 app.use(express.static(path.join(__dirname, 'public')));
