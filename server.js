@@ -18,15 +18,15 @@ app.use('/src', express.static(path.join(__dirname, 'src')));
 
 
 // Global variables for envelopes and total budget
-let envelopes = [
-    { id: 1, title: "groceries", budget: 0, ledger: [] },
-    { id: 2, title: "transport", budget: 0, ledger: [] },
-    { id: 3, title: "entertainment", budget: 0, ledger: [] },
-    { id: 4, title: "bills", budget: 0, ledger: [] },
-    { id: 5, title: "savings", budget: 0, ledger: [] }
-];
+// let envelopes = [
+//     { id: 1, title: "groceries", budget: 0, ledger: [] },
+//     { id: 2, title: "transport", budget: 0, ledger: [] },
+//     { id: 3, title: "entertainment", budget: 0, ledger: [] },
+//     { id: 4, title: "bills", budget: 0, ledger: [] },
+//     { id: 5, title: "savings", budget: 0, ledger: [] }
+// ];
 // Each ledger entry: { amount, date, description, type: 'income' | 'expense' }
-let totalBudget = 0;
+//let totalBudget = 0;
 
 app.use(express.json()); // for parsing application/json
 
@@ -90,8 +90,13 @@ app.get('/envelopes', (req, res) => {
 app.get('/envelopes/:catagory', (req, res) => {
     if (req.params.catagory) {
         const catagory = req.params.catagory;
-        const envelope = envelopes.find(env => env.title === catagory);
-        res.json(envelope ? envelope : { error: 'Category not found.' });
+        pool.query('SELECT * FROM envelopes WHERE title = $1', [catagory], (err, result) => {
+            if (err) {
+                console.log('Error fetching envelope:', err);
+                return res.status(500).json({ error: 'Failed to fetch envelope.' });
+            }
+            res.json(result.rows.length ? result.rows[0] : { error: 'Category not found.' });
+        });
     }
 });
 
@@ -99,19 +104,37 @@ app.get('/envelopes/:catagory', (req, res) => {
 app.post('/envelopes', (req, res) => {
     const { title, budget } = req.body;
     //see if title exists in envelopes array
-    const existingEnvelope = envelopes.find(env => env.title.toLowerCase() === title.toLowerCase());
-    if (existingEnvelope) {
-        return res.status(400).json({ error: 'Envelope with this title already exists.' });
-    }
-    if (!title || typeof budget !== 'number' || budget < 0) {
-        return res.status(400).json({ error: 'Invalid envelope data.' });
-    }
-    const id = envelopes.length ? envelopes[envelopes.length - 1].id + 1 : 1;
-    const newEnvelope = { id, title, budget, ledger: [] };// Initialize ledger for the new envelope
-    envelopes.push(newEnvelope);
-    totalBudget += budget;
-    res.status(201).json(newEnvelope);
+    pool.query('SELECT * FROM envelopes WHERE title = $1', [title], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error fetching envelope.' });
+        }if (result.rows.length) {
+            return res.status(400).json({ error: 'Envelope with this title already exists.' });
+        }
+            pool.query('INSERT INTO envelopes (title, budget) VALUES ($1, $2) RETURNING *', [title, budget], (err, result) => {
+                if (err) {
+                    console.log('Error creating envelope:', err);
+                    return res.status(500).json({ error: 'Failed to create envelope.' });
+                }
+                res.status(201).json(result.rows[0]);
+            
+                        pool.query('INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4)', [result.rows[0].id, budget, 'initial', `Initial budget for ${title}`], (err) => {;
+                        if (err) {
+                            console.log('Error creating ledger entry:', err);
+                        }
+                        });
+
+
+            })
+
+        
+   
+    });
 });
+
+
+
+
+
 
 
 //endpoint to take a given amount and evenly distribute it across all envelopes adding to its value using params
