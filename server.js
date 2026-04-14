@@ -138,39 +138,49 @@ app.post('/envelopes', (req, res) => {
 
 
 //endpoint to take a given amount and evenly distribute it across all envelopes adding to its value using params
+
 app.post('/envelopes/distribute/:amount', (req, res) => {
-        console.log('Distribute request received. Amount:', req.params.amount);
-        console.log('Budgets before:', envelopes.map(e => ({ title: e.title, budget: e.budget })));
     const amount = parseFloat(req.params.amount);
     if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
         return res.status(400).json({ error: 'Invalid amount.' });
     }
-    // Calculate per-envelope share to 2 decimals
-    const perEnvelope = Math.floor((amount / envelopes.length) * 100) / 100;
-    let distributed = perEnvelope * envelopes.length;
-    let remainder = Math.round((amount - distributed) * 100) / 100;
-    envelopes.forEach((env, idx) => {
-        env.budget += perEnvelope;
-    });
-    // Add remainder to the last envelope only
-    if (envelopes.length > 0) {
-        envelopes[envelopes.length - 1].budget += remainder;
-    }
-    // Round all budgets to 2 decimals for display
-    envelopes.forEach(env => {
-        env.budget = Math.round(env.budget * 100) / 100;
-    });
-    //write to ledger for distribution
-    const type = 'distribution';
-    const description = `Amount ${perEnvelope} added to all envelopes`;
-    envelopes.forEach((env, idx) => {
-        const outFromEnvelope = null; // No specific envelope is losing money in a distribution
-        const intoEnvelope = envelopes[idx];
-        ledgerUpdate(outFromEnvelope, intoEnvelope, perEnvelope, type, description);
-    });
+    pool.query('SELECT * FROM envelopes', (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to fetch envelopes.' });
+        }
+        const envelopes = result.rows;
+        if (envelopes.length === 0) {
+            return res.status(400).json({ error: 'No envelopes to distribute to.' });
+        }
+        const perEnvelope = Math.floor((amount / envelopes.length) * 100) / 100;
+        let distributed = perEnvelope * envelopes.length;
+        let remainder = Math.round((amount - distributed) * 100) / 100;
 
-    res.status(200).json(envelopes);
-    console.log('Budgets after:', envelopes.map(e => ({ title: e.title, budget: e.budget })));
+        let completed = 0;
+        envelopes.forEach((env, idx) => {
+            let addAmount = perEnvelope;
+            if (idx === envelopes.length - 1) addAmount += remainder;
+            const newBudget = parseFloat(env.budget) + addAmount;
+            pool.query('UPDATE envelopes SET budget = $1 WHERE id = $2', [newBudget, env.id], (err) => {
+                if (err) console.log('Error updating budget:', err);
+                pool.query(
+                    'INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4)',
+                    [env.id, addAmount, 'distribution', `Distributed $${addAmount} to envelope`],
+                    (err) => {
+                        if (err) console.log('Error creating ledger entry:', err);
+                        completed++;
+                        if (completed === envelopes.length) {
+                            // All updates done, send response
+                            pool.query('SELECT * FROM envelopes', (err, result) => {
+                                if (err) return res.status(500).json({ error: 'Failed to fetch updated envelopes.' });
+                                res.status(200).json(result.rows);
+                            });
+                        }
+                    }
+                );
+            });
+        });
+    });
 });
 
 //transfer money between envelopes using params
