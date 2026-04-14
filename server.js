@@ -46,13 +46,17 @@ const ledgerUpdate = (outFromEnvelope, inToEnvelope, amount, type, description) 
 // DELETE endpoint to remove an envelope by id
 app.delete('/envelopes/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    const index = envelopes.findIndex(env => env.id === id);
-    if (index === -1) {
-        return res.status(404).json({ error: 'Envelope not found.' });
+
+pool.query('DELETE FROM envelopes WHERE id = $1', [id], (err, result) => {
+    if (err) {
+        console.log('Error deleting envelope:', err);
+        return res.status(500).json({ error: 'Failed to delete envelope.' });
+    }else{
+        // Optionally update your envelopes array here if needed
+        return res.status(204).send();
     }
-    totalBudget -= envelopes[index].budget;
-    envelopes.splice(index, 1);
-    res.status(204).send();
+});
+
 });
 
 
@@ -72,7 +76,13 @@ app.delete('/envelopes/:id', (req, res) => {
 
 //get all envelopes
 app.get('/envelopes', (req, res) => {
-    res.json(envelopes);
+    pool.query('SELECT * FROM envelopes', (err, result) => {
+        if (err) {
+            console.log('Error fetching envelopes:', err);
+            return res.status(500).json({ error: 'Failed to fetch envelopes.' });
+        }
+    res.json(result.rows);
+});
 });
 
 
