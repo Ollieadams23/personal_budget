@@ -9,24 +9,34 @@
 
             if (ledgerList) {
                 ledgerList.innerHTML = '';
+                // Fetch ledger entries from backend
+                fetch(`/envelopes/${env.id}/ledger`)
+                    .then(response => response.json())
+                    .then(ledgerEntries => {
+                        if (!Array.isArray(ledgerEntries) || ledgerEntries.length === 0) {
+                            const emptyItem = document.createElement('li');
+                            emptyItem.className = 'list-group-item';
+                            emptyItem.textContent = 'No transactions yet.';
+                            ledgerList.appendChild(emptyItem);
+                        } else {
+                            ledgerEntries.forEach(entry => {
+                                const ledgerItem = document.createElement('li');
+                                const amount = Number(entry.amount).toFixed(2);
+                                const date = entry.date ? new Date(entry.date).toLocaleString() : 'No date';
+                                const description = entry.description ? ` - ${entry.description}` : '';
 
-                if (!Array.isArray(env.ledger) || env.ledger.length === 0) {
-                    const emptyItem = document.createElement('li');
-                    emptyItem.className = 'list-group-item';
-                    emptyItem.textContent = 'No transactions yet.';
-                    ledgerList.appendChild(emptyItem);
-                } else {
-                    env.ledger.forEach(entry => {
-                        const ledgerItem = document.createElement('li');
-                        const amount = Number(entry.amount).toFixed(2);
-                        const date = entry.date ? new Date(entry.date).toLocaleString() : 'No date';
-                        const description = entry.description ? ` - ${entry.description}` : '';
-
-                        ledgerItem.className = 'list-group-item';
-                        ledgerItem.textContent = `$${amount}${description} - ${entry.type} (${date})`;
-                        ledgerList.appendChild(ledgerItem);
+                                ledgerItem.className = 'list-group-item';
+                                ledgerItem.textContent = `$${amount}${description} - ${entry.type} (${date})`;
+                                ledgerList.appendChild(ledgerItem);
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        const errorItem = document.createElement('li');
+                        errorItem.className = 'list-group-item';
+                        errorItem.textContent = 'Failed to load transactions.';
+                        ledgerList.appendChild(errorItem);
                     });
-                }
             }
 
             $('#ledgerModal').modal('show');
