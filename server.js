@@ -72,19 +72,6 @@ app.delete('/envelopes/:id', (req, res) => {
 });
 
 
-// //post request to create envelope
-// app.post('/envelopes', (req, res) => {
-//     const { title, budget } = req.body;
-//     if (!title || typeof budget !== 'number' || budget < 0) {
-//         return res.status(400).json({ error: 'Invalid envelope data.' });
-//     }
-//     const id = envelopes.length ? envelopes[envelopes.length - 1].id + 1 : 1;
-//     const newEnvelope = { id, title, budget };
-//     envelopes.push(newEnvelope);
-//     totalBudget += budget;
-//     res.status(201).json(newEnvelope);
-// });
-
 
 //get all envelopes
 app.get('/envelopes', (req, res) => {
@@ -274,20 +261,40 @@ app.post('/envelopes/:id/expenses', (req, res) => {
     if (!id || typeof amount !== 'number' || amount <= 0) {
         return res.status(400).json({ error: 'Invalid expense data.' });
     }
-    const envIndex = envelopes.findIndex(env => env.id === id);
-    if (envIndex === -1) {
-        return res.status(404).json({ error: 'Envelope not found.' });
-    }
-    envelopes[envIndex].budget = parseFloat(envelopes[envIndex].budget) - amount;
-    // Optionally, store expense record here
+    pool.query('SELECT * FROM envelopes WHERE id = $1', [id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error.' });
+        }
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Envelope not found.' });
+        }
+    
+    pool.query('UPDATE envelopes SET budget = budget - $1 WHERE id = $2', [amount, id], (err) => {
+        if (err) {
+            console.log('Error updating envelope budget:', err);
+            return res.status(500).json({ error: 'Failed to update envelope budget.' });
+        }
+
     //write to ledger
     const type = 'expense';
-    const outFromEnvelope = envelopes[envIndex];
+    const outFromEnvelope = result.rows[0];
     const description = `Expense from ${outFromEnvelope.title}: ${detail}`;
-    ledgerUpdate(outFromEnvelope, null, amount, type, description);
-    
-    res.status(200).json({ envelope: envelopes[envIndex] });
+    pool.query('INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4)', [outFromEnvelope.id, amount, type, description], (err) => {
+        if (err) {
+            console.log('Error creating ledger entry:', err);
+            return res.status(500).json({ error: 'Failed to create ledger entry.' });
+        }
+        // Finally, return the updated envelope
+        pool.query('SELECT * FROM envelopes WHERE id = $1', [id], (err, result) => {
+            if (err) return res.status(500).json({ error: 'Failed to fetch updated envelope.' });
+            res.status(200).json({ envelope: result.rows[0] });
+        });
+    });
 });
+});
+});
+
+
 
 // POST endpoint to add income and update envelope budget using params
 app.post('/envelopes/:id/income', (req, res) => {
