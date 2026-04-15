@@ -310,23 +310,24 @@ app.put('/ledger/:id', (req, res) => {
             return res.status(404).json({ error: 'Ledger entry not found.' });
         }
         const ledger = result.rows[0];
+        const oldAmount = parseFloat(ledger.amount);
+        const diff = amount - oldAmount;
         pool.query('UPDATE ledger SET amount = $1, type = $2, description = $3 WHERE id = $4', [amount, type, description, id], (err) => {
             if (err) {
                 console.log('Error updating ledger entry:', err);
                 return res.status(500).json({ error: 'Failed to update ledger entry.' });
             }
-            //update envelope budget based on new ledger entry
-            
-            pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2', [amount, envelope_id], (err) => {
+            // Update envelope budget by the difference
+            pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2', [diff, envelope_id], (err) => {
                 if (err) {
                     console.log('Error updating envelope budget:', err);
                     return res.status(500).json({ error: 'Failed to update envelope budget.' });
                 }
-            });
-            // Finally, return the updated ledger entry
-            pool.query('SELECT * FROM ledger WHERE id = $1', [id], (err, result) => {
-                if (err) return res.status(500).json({ error: 'Failed to fetch updated ledger entry.' });
-                res.status(200).json({ ledger: result.rows[0] });
+                // Finally, return the updated ledger entry
+                pool.query('SELECT * FROM ledger WHERE id = $1', [id], (err, result) => {
+                    if (err) return res.status(500).json({ error: 'Failed to fetch updated ledger entry.' });
+                    res.status(200).json({ ledger: result.rows[0] });
+                });
             });
         });
     });

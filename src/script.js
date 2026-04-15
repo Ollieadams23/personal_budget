@@ -27,8 +27,72 @@
 
                                 ledgerItem.className = 'list-group-item';
                                 ledgerItem.textContent = `$${amount}${description} - ${entry.type} (${date})`;
+
+                                // Add click event to allow editing in modal form
+                                ledgerItem.addEventListener('click', function() {
+                                    console.log('Clicked ledger item', entry);
+                                    const editModal = document.getElementById('edit-ledger-modal');
+                                    if (!editModal) {
+                                        console.error('edit-ledger-modal element not found!');
+                                        alert('Edit form not found in DOM!');
+                                        return;
+                                    }
+                                    // Always show the form (no display:none)
+                                    editModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    document.getElementById('edit-ledger-id').value = entry.id;
+                                    document.getElementById('edit-ledger-envelope-id').value = entry.envelope_id;
+                                    document.getElementById('edit-ledger-amount').value = entry.amount;
+                                    document.getElementById('edit-ledger-type').value = entry.type;
+                                    document.getElementById('edit-ledger-description').value = entry.description || '';
+                                });
+
                                 ledgerList.appendChild(ledgerItem);
                             });
+
+                            // Handle form submission
+                            const editForm = document.getElementById('edit-ledger-form');
+                            if (editForm) {
+                                editForm.onsubmit = function(e) {
+                                    e.preventDefault();
+                                    const id = document.getElementById('edit-ledger-id').value;
+                                    const envelope_id = document.getElementById('edit-ledger-envelope-id').value;
+                                    const amount = document.getElementById('edit-ledger-amount').value;
+                                    const type = document.getElementById('edit-ledger-type').value;
+                                    const description = document.getElementById('edit-ledger-description').value;
+                                    fetch(`/ledger/${id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            amount: parseFloat(amount),
+                                            type: type,
+                                            description: description,
+                                            envelope_id: envelope_id
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(() => {
+                                        document.getElementById('edit-ledger-modal').style.display = 'none';
+                                        showEnvelopeLedgerModal(env);
+                                    });
+                                };
+                            }
+                            // Handle cancel button
+                            const cancelBtn = document.getElementById('edit-ledger-cancel');
+                            if (cancelBtn) {
+                                cancelBtn.onclick = function() {
+                                    // Clear the form fields
+                                    document.getElementById('edit-ledger-id').value = '';
+                                    document.getElementById('edit-ledger-envelope-id').value = '';
+                                    document.getElementById('edit-ledger-amount').value = '';
+                                    document.getElementById('edit-ledger-type').value = '';
+                                    document.getElementById('edit-ledger-description').value = '';
+                                    // Scroll the ledger list into view
+                                    const ledgerList = document.getElementById('ledger-modal-list');
+                                    if (ledgerList) {
+                                        ledgerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }
+                                };
+                            }
                         }
                     })
                     .catch(() => {
