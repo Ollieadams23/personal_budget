@@ -381,8 +381,41 @@ app.post('/envelopes/:id/income', (req, res) => {
     });
 });
 
+//delete endpoint to remove a ledger entry by id and envelope id params
+app.delete('/deleteledger/:envelope_id', (req, res) => {
+    console.log('DELETE /deleteledger/:envelope_id hit', req.params, req.query);
+    const id = parseInt(req.query.id);
+    const envelope_id = parseInt(req.params.envelope_id);
+    const amount = parseFloat(req.query.amount);
+    if (!id || !envelope_id) {
+        return res.status(400).json({ error: 'Invalid ledger id.' });
+    }
+    console.log('Parsed id:', id, 'Parsed envelope_id:', envelope_id, 'Parsed amount:', amount);
+
+    pool.query('SELECT * FROM envelopes WHERE id = $1', [envelope_id], (err, result) => {
+        console.log('envelope result:', result);
+    });
+
+    pool.query('UPDATE envelopes SET budget = budget - $1 WHERE id = $2', [amount, envelope_id], (err, result) => {
+        console.log(result.rows);
+        if (err) {
+            return res.status(500).json({ error: 'Database error.' });
+        }
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Envelope not found.' });
+        }
 
 
+    pool.query('DELETE FROM ledger WHERE id = $1 AND envelope_id = $2', [id, envelope_id], (err, result) => {
+        if (err) {
+            console.log('Error deleting ledger entry:', err);
+            return res.status(500).json({ error: 'Failed to delete ledger entry.' });
+        } else {
+            return res.status(200).send('Deleted ledger entry');
+        }
+    });
+});
+});
 
 
 // Start the server

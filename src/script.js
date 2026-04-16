@@ -71,7 +71,17 @@
                                     })
                                     .then(response => response.json())
                                     .then(() => {
-                                        document.getElementById('edit-ledger-modal').style.display = 'none';
+                                        // Clear the form fields
+                                        document.getElementById('edit-ledger-id').value = '';
+                                        document.getElementById('edit-ledger-envelope-id').value = '';
+                                        document.getElementById('edit-ledger-amount').value = '';
+                                        document.getElementById('edit-ledger-type').value = '';
+                                        document.getElementById('edit-ledger-description').value = '';
+                                        // Scroll the ledger list into view
+                                        const ledgerList = document.getElementById('ledger-modal-list');
+                                        if (ledgerList) {
+                                            ledgerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
                                         showEnvelopeLedgerModal(env);
                                     });
                                 };
@@ -91,6 +101,47 @@
                                     if (ledgerList) {
                                         ledgerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     }
+                                };
+                            }
+
+                            // Handle delete button
+                            const deleteBtn = document.getElementById('delete-ledger-button');
+                            if (deleteBtn) {
+                                deleteBtn.onclick = function() {
+                                    const id = document.getElementById('edit-ledger-id').value;
+                                    const envelope_id = document.getElementById('edit-ledger-envelope-id').value;
+                                    const amount = document.getElementById('edit-ledger-amount').value;
+                                    if (!id || !envelope_id) {
+                                        alert('Missing ledger id or envelope id.');
+                                        return;
+                                    }
+                                    if (!confirm('Are you sure you want to delete this transaction?')) {
+                                        return;
+                                    }
+                                    fetch(`/deleteledger/${envelope_id}?id=${id}&amount=${amount}`, {
+                                        method: 'DELETE'
+                                    })
+                                    .then(response => {
+                                        if (response.ok) {
+                                            // Clear the form fields
+                                            document.getElementById('edit-ledger-id').value = '';
+                                            document.getElementById('edit-ledger-envelope-id').value = '';
+                                            document.getElementById('edit-ledger-amount').value = '';
+                                            document.getElementById('edit-ledger-type').value = '';
+                                            document.getElementById('edit-ledger-description').value = '';
+                                            // Scroll the ledger list into view
+                                            const ledgerList = document.getElementById('ledger-modal-list');
+                                            if (ledgerList) {
+                                                ledgerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                            showEnvelopeLedgerModal(env);
+                                        } else {
+                                            alert('Failed to delete ledger entry.');
+                                        }
+                                    })
+                                    .catch(() => {
+                                        alert('Error deleting ledger entry.');
+                                    });
                                 };
                             }
                         }
