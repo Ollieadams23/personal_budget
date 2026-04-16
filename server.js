@@ -396,12 +396,12 @@ app.delete('/deleteledger/:envelope_id', (req, res) => {
     //     console.log('envelope result:', result.rows[0]);
     // });
 
-    pool.query('UPDATE envelopes SET budget = budget - $1 WHERE id = $2 RETURNING *', [amount, envelope_id], (err, result) => {
+    pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2 RETURNING *', [amount, envelope_id], (err, result) => {
         console.log(result.rows[0]);
         if (err) {
             return res.status(500).json({ error: 'Database error.' });
         }
-        if (result.rows.length === 0) {//needs returning to work or always returns this
+        if (result.rows.length === 0) {//needs returning or this will always return 404 because result of update is not being returned
             return res.status(404).json({ error: 'Envelope not found.' });
         }
 
