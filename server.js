@@ -401,9 +401,6 @@ app.delete('/deleteledger/:envelope_id', (req, res) => {
     }
     console.log('Parsed id:', id, 'Parsed envelope_id:', envelope_id, 'Parsed amount:', amount);
 
-    // pool.query('SELECT * FROM envelopes WHERE id = $1', [envelope_id], (err, result) => {
-    //     console.log('envelope result:', result.rows[0]);
-    // });
 
     pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2 RETURNING *', [newAmount, envelope_id], (err, result) => {
         console.log(result.rows[0]);
