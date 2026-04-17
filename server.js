@@ -232,7 +232,7 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
                 pool.query(
                     'INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4), ($5, $6, $7, $8)',
                     [
-                        fromId, -amount, 'expense', `Transfer to ${toEnvelope.title}`,
+                        fromId, amount, 'expense', `Transfer to ${toEnvelope.title}`,
                         toId, amount, 'income', `Transfer from ${fromEnvelope.title}`
                     ],
                     (err) => {
@@ -399,7 +399,7 @@ app.delete('/deleteledger/:envelope_id', (req, res) => {
     if (!id || !envelope_id) {
         return res.status(400).json({ error: 'Invalid ledger id.' });
     }
-    //console.log('Parsed id:', id, 'Parsed envelope_id:', envelope_id, 'Parsed amount:', amount);
+    console.log('Parsed id:', id, 'Parsed envelope_id:', envelope_id, 'Parsed amount:', amount);
 
     // pool.query('SELECT * FROM envelopes WHERE id = $1', [envelope_id], (err, result) => {
     //     console.log('envelope result:', result.rows[0]);
