@@ -1,0 +1,548 @@
+openapi: 3.0.0
+info:
+  title: 2026 Personal Budget API
+  description: |
+    A RESTful API for managing personal budgets using the envelope budgeting method. This API allows users to create and manage envelopes representing budget categories, track income and expenses via ledger entries, transfer funds between envelopes, and distribute funds evenly across envelopes. All data is exchanged in JSON format.
+  version: 1.0.0
+servers:
+- url: http://localhost:3000
+  description: Local development server
+tags:
+- name: Root
+  description: Root endpoint serving main page
+- name: Envelopes
+  description: Operations related to budget envelopes
+- name: Ledger
+  description: Operations related to ledger entries
+- name: Expenses
+  description: Expense related operations
+- name: Income
+  description: Income related operations
+paths:
+  /:
+    get:
+      summary: Serve main HTML page
+      operationId: getRoot
+      responses:
+        "200":
+          description: Main HTML page served
+          content:
+            text/html:
+              schema:
+                type: string
+  /envelopes:
+    get:
+      summary: Retrieve all envelopes
+      operationId: getEnvelopes
+      responses:
+        "200":
+          description: List of all envelopes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Envelope"
+    post:
+      summary: Create a new envelope
+      operationId: createEnvelope
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/envelopes_body"
+        required: true
+      responses:
+        "201":
+          description: Envelope created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "400":
+          description: Duplicate title or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /envelopes/{catagory}:
+    get:
+      summary: Retrieve an envelope by its category (title)
+      operationId: getEnvelopeByCategory
+      parameters:
+      - name: catagory
+        in: path
+        description: Title of the envelope category
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Envelope found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "404":
+          description: Envelope not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /envelopes/{id}:
+    delete:
+      summary: Delete an envelope by ID
+      operationId: deleteEnvelope
+      parameters:
+      - name: id
+        in: path
+        description: Envelope ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Envelope deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200"
+        "404":
+          description: Envelope not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /envelopes/{id}/ledger:
+    get:
+      summary: Retrieve ledger entries for a specific envelope
+      operationId: getLedgerByEnvelopeId
+      parameters:
+      - name: id
+        in: path
+        description: Envelope ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: List of ledger entries for the envelope
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LedgerEntry"
+        "400":
+          description: Invalid envelope ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /envelopes/distribute/{amount}:
+    post:
+      summary: Evenly distribute an amount across all envelopes
+      operationId: distributeAmountAcrossEnvelopes
+      parameters:
+      - name: amount
+        in: path
+        description: Amount to distribute (must be greater than 0)
+        required: true
+        schema:
+          minimum: 0.01
+          type: number
+          format: float
+      responses:
+        "200":
+          description: Envelopes updated with distributed amounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Envelope"
+        "400":
+          description: Invalid amount or no envelopes available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /envelopes/transfer/{fromId}/{toId}/{amount}:
+    post:
+      summary: Transfer funds between two envelopes
+      operationId: transferBetweenEnvelopes
+      parameters:
+      - name: fromId
+        in: path
+        description: Source envelope ID
+        required: true
+        schema:
+          type: integer
+      - name: toId
+        in: path
+        description: Destination envelope ID
+        required: true
+        schema:
+          type: integer
+      - name: amount
+        in: path
+        description: Amount to transfer (must be greater than 0)
+        required: true
+        schema:
+          minimum: 0.01
+          type: number
+          format: float
+      responses:
+        "200":
+          description: Envelopes updated after transfer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Envelope"
+        "400":
+          description: Invalid amount or same envelope IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: One or both envelopes not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /envelopes/{id}/expenses:
+    post:
+      summary: Add an expense to an envelope (deduct budget and create ledger entry)
+      operationId: addExpenseToEnvelope
+      parameters:
+      - name: id
+        in: path
+        description: Envelope ID
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/id_expenses_body"
+        required: true
+      responses:
+        "200":
+          description: Envelope updated with new expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "400":
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Envelope not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /envelopes/{id}/income:
+    post:
+      summary: Add income to an envelope (increase budget and create ledger entry)
+      operationId: addIncomeToEnvelope
+      parameters:
+      - name: id
+        in: path
+        description: Envelope ID
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/id_income_body"
+        required: true
+      responses:
+        "200":
+          description: Envelope updated with new income
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "400":
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Envelope not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ledger/{id}:
+    put:
+      summary: Update a ledger entry and adjust the associated envelope budget
+      operationId: updateLedgerEntry
+      parameters:
+      - name: id
+        in: path
+        description: Ledger entry ID
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ledger_id_body"
+        required: true
+      responses:
+        "200":
+          description: Ledger entry updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerEntry"
+        "400":
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Ledger entry not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /deleteledger/{envelope_id}:
+    delete:
+      summary: Delete a ledger entry by ledger ID and envelope ID
+      operationId: deleteLedgerEntry
+      parameters:
+      - name: envelope_id
+        in: path
+        description: Envelope ID
+        required: true
+        schema:
+          type: integer
+      - name: id
+        in: query
+        description: Ledger entry ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Ledger entry deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_1"
+        "400":
+          description: Invalid IDs provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Ledger entry or envelope not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Envelope:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Groceries
+        budget:
+          type: number
+          format: float
+          example: 500
+      description: An envelope representing a budget category
+    LedgerEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        envelope_id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          format: float
+          example: 50
+        type:
+          type: string
+          example: expense
+          enum:
+          - income
+          - expense
+          - transfer
+          - initial
+        description:
+          type: string
+          example: Weekly grocery shopping
+        date:
+          type: string
+          format: date-time
+          example: 2024-04-27T12:00:00Z
+        transfer_ref_id:
+          type: integer
+          nullable: true
+      description: "A ledger entry recording income, expense, or transfer"
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Resource not found or invalid input
+      description: Error response object
+    envelopes_body:
+      required:
+      - budget
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+          description: Unique title of the envelope
+        budget:
+          minimum: 0
+          type: number
+          description: Initial budget amount
+          format: float
+    inline_response_200:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Envelope deleted successfully
+    id_expenses_body:
+      required:
+      - amount
+      - detail
+      type: object
+      properties:
+        amount:
+          minimum: 0.01
+          type: number
+          description: Expense amount
+          format: float
+        detail:
+          type: string
+          description: Expense description
+    id_income_body:
+      required:
+      - amount
+      - detail
+      type: object
+      properties:
+        amount:
+          minimum: 0.01
+          type: number
+          description: Income amount
+          format: float
+        detail:
+          type: string
+          description: Income description
+    ledger_id_body:
+      required:
+      - amount
+      - description
+      - envelope_id
+      - type
+      type: object
+      properties:
+        amount:
+          type: number
+          description: Ledger entry amount
+          format: float
+        type:
+          type: string
+          description: Type of ledger entry
+          enum:
+          - income
+          - expense
+          - transfer
+          - initial
+        description:
+          type: string
+          description: Description of the ledger entry
+        envelope_id:
+          type: integer
+          description: Associated envelope ID
+    inline_response_200_1:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Ledger entry deleted successfully

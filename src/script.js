@@ -9,24 +9,160 @@
 
             if (ledgerList) {
                 ledgerList.innerHTML = '';
+                // Fetch ledger entries from backend
+                fetch(`/envelopes/${env.id}/ledger`)
+                    .then(response => response.json())
+                    .then(ledgerEntries => {
+                        if (!Array.isArray(ledgerEntries) || ledgerEntries.length === 0) {
+                            const emptyItem = document.createElement('li');
+                            emptyItem.className = 'list-group-item';
+                            emptyItem.textContent = 'No transactions yet.';
+                            ledgerList.appendChild(emptyItem);
+                        } else {
+                            ledgerEntries.forEach(entry => {
 
-                if (!Array.isArray(env.ledger) || env.ledger.length === 0) {
-                    const emptyItem = document.createElement('li');
-                    emptyItem.className = 'list-group-item';
-                    emptyItem.textContent = 'No transactions yet.';
-                    ledgerList.appendChild(emptyItem);
-                } else {
-                    env.ledger.forEach(entry => {
-                        const ledgerItem = document.createElement('li');
-                        const amount = Number(entry.amount).toFixed(2);
-                        const date = entry.date ? new Date(entry.date).toLocaleString() : 'No date';
-                        const description = entry.description ? ` - ${entry.description}` : '';
+                                const ledgerItem = document.createElement('li');
+                                const rawAmount = Number(entry.amount);
+                                let sign;
+                                if (entry.type === 'expense') {
+                                    sign = '-';
+                                } else if (entry.type === 'income') {
+                                    sign = '+';
+                                } else {
+                                    sign = rawAmount > 0 ? '+' : (rawAmount < 0 ? '-' : '');
+                                }
+                                const absAmount = Math.abs(rawAmount).toFixed(2);
+                                const date = entry.date ? new Date(entry.date).toLocaleString() : 'No date';
+                                const description = entry.description ? ` - ${entry.description}` : '';
 
-                        ledgerItem.className = 'list-group-item';
-                        ledgerItem.textContent = `$${amount}${description} - ${entry.type} (${date})`;
-                        ledgerList.appendChild(ledgerItem);
+                                ledgerItem.className = 'list-group-item';
+                                ledgerItem.textContent = `${sign}$${absAmount}${description} - ${entry.type} (${date})`;
+
+                                // Add click event to allow editing in modal form
+                                ledgerItem.addEventListener('click', function() {
+                                    console.log('Clicked ledger item', entry);
+                                    const editModal = document.getElementById('edit-ledger-modal');
+                                    if (!editModal) {
+                                        console.error('edit-ledger-modal element not found!');
+                                        alert('Edit form not found in DOM!');
+                                        return;
+                                    }
+                                    // Always show the form (no display:none)
+                                    editModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    document.getElementById('edit-ledger-id').value = entry.id;
+                                    document.getElementById('edit-ledger-envelope-id').value = entry.envelope_id;
+                                    document.getElementById('edit-ledger-amount').value = entry.amount;
+                                    document.getElementById('edit-ledger-type').value = entry.type;
+                                    document.getElementById('edit-ledger-description').value = entry.description || '';
+                                });
+
+                                ledgerList.appendChild(ledgerItem);
+                            });
+
+                            // Handle form submission
+                            const editForm = document.getElementById('edit-ledger-form');
+                            if (editForm) {
+                                editForm.onsubmit = function(e) {
+                                    e.preventDefault();
+                                    const id = document.getElementById('edit-ledger-id').value;
+                                    const envelope_id = document.getElementById('edit-ledger-envelope-id').value;
+                                    const amount = document.getElementById('edit-ledger-amount').value;
+                                    const type = document.getElementById('edit-ledger-type').value;
+                                    const description = document.getElementById('edit-ledger-description').value;
+                                    fetch(`/ledger/${id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            amount: parseFloat(amount),
+                                            type: type,
+                                            description: description,
+                                            envelope_id: envelope_id
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(() => {
+                                        // Clear the form fields
+                                        document.getElementById('edit-ledger-id').value = '';
+                                        document.getElementById('edit-ledger-envelope-id').value = '';
+                                        document.getElementById('edit-ledger-amount').value = '';
+                                        document.getElementById('edit-ledger-type').value = '';
+                                        document.getElementById('edit-ledger-description').value = '';
+                                        // Scroll the ledger list into view
+                                        const ledgerList = document.getElementById('ledger-modal-list');
+                                        if (ledgerList) {
+                                            ledgerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
+                                        showEnvelopeLedgerModal(env);
+                                    });
+                                };
+                            }
+                            // Handle cancel button
+                            const cancelBtn = document.getElementById('edit-ledger-cancel');
+                            if (cancelBtn) {
+                                cancelBtn.onclick = function() {
+                                    // Clear the form fields
+                                    document.getElementById('edit-ledger-id').value = '';
+                                    document.getElementById('edit-ledger-envelope-id').value = '';
+                                    document.getElementById('edit-ledger-amount').value = '';
+                                    document.getElementById('edit-ledger-type').value = '';
+                                    document.getElementById('edit-ledger-description').value = '';
+                                    // Scroll the ledger list into view
+                                    const ledgerList = document.getElementById('ledger-modal-list');
+                                    if (ledgerList) {
+                                        ledgerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }
+                                };
+                            }
+
+                            // Handle delete button
+                            const deleteBtn = document.getElementById('delete-ledger-button');
+                            if (deleteBtn) {
+                                deleteBtn.onclick = function() {
+                                    const id = document.getElementById('edit-ledger-id').value;
+                                    const envelope_id = document.getElementById('edit-ledger-envelope-id').value;
+                                    const amount = document.getElementById('edit-ledger-amount').value;
+                                    const type = document.getElementById('edit-ledger-type').value;
+                                    if (!id || !envelope_id) {
+                                        alert('Missing ledger id or envelope id.');
+                                        return;
+                                    }
+                                    if (!confirm('Are you sure you want to delete this transaction?')) {
+                                        return;
+                                    }
+                                    fetch(`/deleteledger/${envelope_id}?id=${id}&amount=${amount}&type=${type}`, {
+                                        method: 'DELETE'
+                                    })
+                                    .then(response => {
+                                        if (response.ok) {
+                                            // Clear the form fields
+                                            document.getElementById('edit-ledger-id').value = '';
+                                            document.getElementById('edit-ledger-envelope-id').value = '';
+                                            document.getElementById('edit-ledger-amount').value = '';
+                                            document.getElementById('edit-ledger-type').value = '';
+                                            document.getElementById('edit-ledger-description').value = '';
+                                            // Scroll the ledger list into view
+                                            const ledgerList = document.getElementById('ledger-modal-list');
+                                            if (ledgerList) {
+                                                ledgerList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                            showEnvelopeLedgerModal(env);
+                                        } else {
+                                            alert('Failed to delete ledger entry.');
+                                        }
+                                    })
+                                    .catch(() => {
+                                        alert('Error deleting ledger entry.');
+                                    });
+                                };
+                            }
+                        }
+                    })
+                    .catch(() => {
+                        const errorItem = document.createElement('li');
+                        errorItem.className = 'list-group-item';
+                        errorItem.textContent = 'Failed to load transactions.';
+                        ledgerList.appendChild(errorItem);
                     });
-                }
             }
 
             $('#ledgerModal').modal('show');

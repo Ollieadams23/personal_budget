@@ -5,6 +5,7 @@
 - `public/`: Static frontend files (HTML, CSS, modals).
 - `src/script.js`: Frontend logic for UI, modals, and API calls.
 
+
 ## Key Operations
 - **Envelope CRUD:**
   - Endpoints: `/envelopes` (GET, POST), `/envelopes/:id` (DELETE)
@@ -12,6 +13,8 @@
   - Endpoints: `/envelopes/:id/expenses`, `/envelopes/:id/income` (POST)
 - **Transfer:**
   - Endpoint: `/envelopes/transfer/:fromId/:toId/:amount` (POST)
+  - Each transfer creates two ledger entries, each referencing the other via `transfer_ref_id`.
+  - Deleting a transfer deletes both entries and reverses both budgets.
 - **Distribute Income:**
   - Endpoint: `/envelopes/distribute/:amount` (POST)
   - Splits amount evenly, remainder to last envelope, adds to existing budgets
@@ -34,15 +37,27 @@ Each envelope object contains a `ledger` array that records all transactions aff
 }
 ```
 
+
 ### Ledger Entry Fields
 - `amount`: Positive for income, negative for expenses or outgoing transfers.
 - `date`: ISO string or Date object when the transaction occurred.
 - `description`: Short text describing the transaction.
+- `type`: 'income', 'expense', or 'transfer'.
+- `transfer_ref_id`: (integer, nullable) If this entry is part of a transfer, references the corresponding ledger entry in the other envelope.
+
+### Transfer Deletion Logic
+- When deleting a ledger entry of type 'transfer', the backend will:
+  - Find the referenced entry using `transfer_ref_id`.
+  - Delete both ledger entries.
+  - Reverse both envelope budgets accordingly.
+
+### Database Schema Note
+- The app now requires a PostgreSQL database with a `ledger` table that includes a nullable `transfer_ref_id` column referencing `ledger(id)`.
 - `type`: One of `income`, `expense`, `transfer in`, `transfer out`, `distribution`, etc.
 
 ### How the Ledger Works
 - **Adding Income:** Adds a positive entry to the ledger and increases the envelope's budget.
-- **Adding Expense:** Adds a negative entry to the ledger and decreases the envelope's budget.
+- **Adding Expense:** Adds a positive entry to the ledger and decreases the envelope's budget.
 - **Transfers:** Adds a negative entry to the source envelope's ledger (`transfer out`) and a positive entry to the target envelope's ledger (`transfer in`).
 - **Distribution:** Adds a positive entry to each envelope's ledger with type `distribution`.
 
