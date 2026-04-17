@@ -92,3 +92,20 @@ The sum of all `amount` values in the ledger should always equal the envelope's 
 
 ## Contact
 - For questions or contributions, open an issue or pull request.
+
+## psql create table statements
+CREATE TABLE envelopes (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    budget NUMERIC(12,2) NOT NULL DEFAULT 0
+);
+
+CREATE TABLE ledger (
+    id SERIAL PRIMARY KEY,
+    envelope_id INTEGER NOT NULL REFERENCES envelopes(id) ON DELETE CASCADE,
+    amount NUMERIC(12,2) NOT NULL,
+    type VARCHAR(20) NOT NULL, -- 'income', 'expense', 'transfer'
+    description TEXT,
+    transfer_ref_id INTEGER REFERENCES ledger(id) ON DELETE SET NULL,
+    date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
