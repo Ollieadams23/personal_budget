@@ -228,20 +228,35 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
             pool.query('UPDATE envelopes SET budget = $1 WHERE id = $2', [newToBudget, toId], (err) => {
                 if (err) return res.status(500).json({ error: 'Failed to update destination envelope.' });
 
-                // Insert ledger entries for both envelopes
+                // Insert first ledger entry (from envelope)
                 pool.query(
-                    'INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4), ($5, $6, $7, $8)',
-                    [
-                        fromId, amount, 'expense', `Transfer to ${toEnvelope.title}`,
-                        toId, amount, 'income', `Transfer from ${fromEnvelope.title}`
-                    ],
-                    (err) => {
-                        if (err) console.log('Error creating ledger entries:', err);
-                        // Return updated envelopes
-                        pool.query('SELECT * FROM envelopes WHERE id = $1 OR id = $2', [fromId, toId], (err, result) => {
-                            if (err) return res.status(500).json({ error: 'Failed to fetch updated envelopes.' });
-                            res.status(200).json({ fromEnvelope: result.rows.find(e => e.id === fromId), toEnvelope: result.rows.find(e => e.id === toId) });
-                        });
+                    'INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4) RETURNING id',
+                    [fromId, -amount, 'expense', `Transfer to ${toEnvelope.title}`],
+                    (err, fromResult) => {
+                        if (err) return res.status(500).json({ error: 'Error creating source ledger entry.' });
+                        const fromLedgerId = fromResult.rows[0].id;
+                        // Insert second ledger entry (to envelope), referencing the first
+                        pool.query(
+                            'INSERT INTO ledger (envelope_id, amount, type, description, transfer_ref_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+                            [toId, amount, 'income', `Transfer from ${fromEnvelope.title}`, fromLedgerId],
+                            (err, toResult) => {
+                                if (err) return res.status(500).json({ error: 'Error creating destination ledger entry.' });
+                                const toLedgerId = toResult.rows[0].id;
+                                // Update the first ledger entry to reference the second
+                                pool.query(
+                                    'UPDATE ledger SET transfer_ref_id = $1 WHERE id = $2',
+                                    [toLedgerId, fromLedgerId],
+                                    (err) => {
+                                        if (err) console.log('Error updating transfer_ref_id:', err);
+                                        // Return updated envelopes
+                                        pool.query('SELECT * FROM envelopes WHERE id = $1 OR id = $2', [fromId, toId], (err, result) => {
+                                            if (err) return res.status(500).json({ error: 'Failed to fetch updated envelopes.' });
+                                            res.status(200).json({ fromEnvelope: result.rows.find(e => e.id === fromId), toEnvelope: result.rows.find(e => e.id === toId) });
+                                        });
+                                    }
+                                );
+                            }
+                        );
                     }
                 );
             });
