@@ -23,18 +23,21 @@ This app helps you manage your budget using envelopes for different spending cat
 5. **Edit/Delete Envelopes:**
    - Click "Edit Envelopes" in the sidebar to manage envelopes.
 
+
 ## Features
 - Envelope-based budgeting
 - Add, edit, delete envelopes
 - Record expenses and income
-- Transfer funds between envelopes
+- Transfer funds between envelopes (each transfer creates two linked ledger entries; deleting a transfer deletes both and reverses budgets)
 - Distribute income evenly across envelopes
 - Responsive, clean UI
 
+
 ## Requirements
 - Node.js
-- No database required (data is stored in memory)
+- PostgreSQL database (see DEV_GUIDE.md for schema details)
+
 
 ## Notes
-- All data resets when the server restarts.
-- For development and testing only.
+- Transfers are tracked with cross-referencing ledger entries for robust deletion and reversal.
+- See DEV_GUIDE.md for developer and schema details.
