@@ -179,7 +179,7 @@ app.post('/envelopes/distribute/:amount', (req, res) => {
                 if (err) console.log('Error updating budget:', err);
                 pool.query(
                     'INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4)',
-                    [env.id, addAmount, 'distribution', `Distributed $${addAmount} to envelope`],
+                    [env.id, addAmount, 'income', `Distributed $${addAmount} to envelope`],
                     (err) => {
                         if (err) console.log('Error creating ledger entry:', err);
                         completed++;
@@ -232,8 +232,8 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
                 pool.query(
                     'INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4), ($5, $6, $7, $8)',
                     [
-                        fromId, -amount, 'transfer', `Transfer to ${toEnvelope.title}`,
-                        toId, amount, 'transfer', `Transfer from ${fromEnvelope.title}`
+                        fromId, -amount, 'expense', `Transfer to ${toEnvelope.title}`,
+                        toId, amount, 'income', `Transfer from ${fromEnvelope.title}`
                     ],
                     (err) => {
                         if (err) console.log('Error creating ledger entries:', err);
@@ -387,6 +387,15 @@ app.delete('/deleteledger/:envelope_id', (req, res) => {
     const id = parseInt(req.query.id);
     const envelope_id = parseInt(req.params.envelope_id);
     const amount = parseFloat(req.query.amount);
+    const type = req.query.type;
+    let newAmount = 0;
+    console.log(newAmount);
+    if (type === 'expense') {
+        newAmount = amount;//if it's an expense we want to subtract the negative amount to get back to the original budget
+    }else if (type === 'income') {
+        newAmount = -amount;
+    }
+
     if (!id || !envelope_id) {
         return res.status(400).json({ error: 'Invalid ledger id.' });
     }
@@ -396,7 +405,7 @@ app.delete('/deleteledger/:envelope_id', (req, res) => {
     //     console.log('envelope result:', result.rows[0]);
     // });
 
-    pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2 RETURNING *', [amount, envelope_id], (err, result) => {
+    pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2 RETURNING *', [newAmount, envelope_id], (err, result) => {
         console.log(result.rows[0]);
         if (err) {
             return res.status(500).json({ error: 'Database error.' });

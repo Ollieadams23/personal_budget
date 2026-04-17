@@ -20,13 +20,23 @@
                             ledgerList.appendChild(emptyItem);
                         } else {
                             ledgerEntries.forEach(entry => {
+
                                 const ledgerItem = document.createElement('li');
-                                const amount = Number(entry.amount).toFixed(2);
+                                const rawAmount = Number(entry.amount);
+                                let sign;
+                                if (entry.type === 'expense') {
+                                    sign = '-';
+                                } else if (entry.type === 'income') {
+                                    sign = '+';
+                                } else {
+                                    sign = rawAmount > 0 ? '+' : (rawAmount < 0 ? '-' : '');
+                                }
+                                const absAmount = Math.abs(rawAmount).toFixed(2);
                                 const date = entry.date ? new Date(entry.date).toLocaleString() : 'No date';
                                 const description = entry.description ? ` - ${entry.description}` : '';
 
                                 ledgerItem.className = 'list-group-item';
-                                ledgerItem.textContent = `$${amount}${description} - ${entry.type} (${date})`;
+                                ledgerItem.textContent = `${sign}$${absAmount}${description} - ${entry.type} (${date})`;
 
                                 // Add click event to allow editing in modal form
                                 ledgerItem.addEventListener('click', function() {
@@ -111,6 +121,7 @@
                                     const id = document.getElementById('edit-ledger-id').value;
                                     const envelope_id = document.getElementById('edit-ledger-envelope-id').value;
                                     const amount = document.getElementById('edit-ledger-amount').value;
+                                    const type = document.getElementById('edit-ledger-type').value;
                                     if (!id || !envelope_id) {
                                         alert('Missing ledger id or envelope id.');
                                         return;
@@ -118,7 +129,7 @@
                                     if (!confirm('Are you sure you want to delete this transaction?')) {
                                         return;
                                     }
-                                    fetch(`/deleteledger/${envelope_id}?id=${id}&amount=${amount}`, {
+                                    fetch(`/deleteledger/${envelope_id}?id=${id}&amount=${amount}&type=${type}`, {
                                         method: 'DELETE'
                                     })
                                     .then(response => {
