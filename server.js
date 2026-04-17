@@ -231,14 +231,14 @@ app.post('/envelopes/transfer/:fromId/:toId/:amount', (req, res) => {
                 // Insert first ledger entry (from envelope)
                 pool.query(
                     'INSERT INTO ledger (envelope_id, amount, type, description) VALUES ($1, $2, $3, $4) RETURNING id',
-                    [fromId, -amount, 'expense', `Transfer to ${toEnvelope.title}`],
+                    [fromId, -amount, 'transfer', `Transfer to ${toEnvelope.title}`],
                     (err, fromResult) => {
                         if (err) return res.status(500).json({ error: 'Error creating source ledger entry.' });
                         const fromLedgerId = fromResult.rows[0].id;
                         // Insert second ledger entry (to envelope), referencing the first
                         pool.query(
                             'INSERT INTO ledger (envelope_id, amount, type, description, transfer_ref_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-                            [toId, amount, 'income', `Transfer from ${fromEnvelope.title}`, fromLedgerId],
+                            [toId, amount, 'transfer', `Transfer from ${fromEnvelope.title}`, fromLedgerId],
                             (err, toResult) => {
                                 if (err) return res.status(500).json({ error: 'Error creating destination ledger entry.' });
                                 const toLedgerId = toResult.rows[0].id;
@@ -398,47 +398,88 @@ app.post('/envelopes/:id/income', (req, res) => {
 
 //delete endpoint to remove a ledger entry by id and envelope id params
 app.delete('/deleteledger/:envelope_id', (req, res) => {
-    console.log('DELETE /deleteledger/:envelope_id hit', req.params, req.query);
     const id = parseInt(req.query.id);
     const envelope_id = parseInt(req.params.envelope_id);
-    const amount = parseFloat(req.query.amount);
-    const type = req.query.type;
-    let newAmount = 0;
-    console.log(newAmount);
-    if (type === 'expense') {
-        newAmount = amount;//if it's an expense we want to subtract the negative amount to get back to the original budget
-    }else if (type === 'income') {
-        newAmount = -amount;
-    }
-
     if (!id || !envelope_id) {
         return res.status(400).json({ error: 'Invalid ledger id.' });
     }
-    console.log('Parsed id:', id, 'Parsed envelope_id:', envelope_id, 'Parsed amount:', amount);
-
-
-    pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2 RETURNING *', [newAmount, envelope_id], (err, result) => {
-        console.log(result.rows[0]);
-        if (err) {
-            return res.status(500).json({ error: 'Database error.' });
-        }
-        if (result.rows.length === 0) {//needs returning or this will always return 404 because result of update is not being returned
-            return res.status(404).json({ error: 'Envelope not found.' });
-        }
-
-
-    pool.query('DELETE FROM ledger WHERE id = $1 AND envelope_id = $2', [id, envelope_id], (err, result) => {
-        if (err) {
-            console.log('Error deleting ledger entry:', err);
-            return res.status(500).json({ error: 'Failed to delete ledger entry.' });
-        }if (result.rowCount === 0) {
+    // Fetch the ledger entry to get type and transfer_ref_id
+    pool.query('SELECT * FROM ledger WHERE id = $1 AND envelope_id = $2', [id, envelope_id], (err, result) => {
+        if (err || result.rows.length === 0) {
             return res.status(404).json({ error: 'Ledger entry not found.' });
-        }else {
-            return res.status(200).send('Deleted ledger entry');
         }
+        const entry = result.rows[0];
+        if (entry.type === 'transfer') {
+            // If transfer, call special delete logic
+            deleteTransferPair(entry, res);
+            return;
+        }
+        // Otherwise, proceed as before
+        let newAmount = 0;
+        if (entry.type === 'expense') {
+            newAmount = entry.amount;
+        } else if (entry.type === 'income') {
+            newAmount = -entry.amount;
+        }
+        pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2 RETURNING *', [newAmount, envelope_id], (err2, result2) => {
+            if (err2) {
+                return res.status(500).json({ error: 'Database error.' });
+            }
+            if (result2.rows.length === 0) {
+                return res.status(404).json({ error: 'Envelope not found.' });
+            }
+            pool.query('DELETE FROM ledger WHERE id = $1 AND envelope_id = $2', [id, envelope_id], (err3, delResult) => {
+                if (err3) {
+                    return res.status(500).json({ error: 'Failed to delete ledger entry.' });
+                }
+                if (delResult.rowCount === 0) {
+                    return res.status(404).json({ error: 'Ledger entry not found.' });
+                } else {
+                    return res.status(200).send('Deleted ledger entry');
+                }
+            });
+        });
     });
 });
-});
+
+// Helper function to delete both sides of a transfer
+function deleteTransferPair(entry, res) {
+    // Find the referenced ledger entry
+    const refId = entry.transfer_ref_id;
+    if (!refId) {
+        // If no reference, just delete this entry and reverse budget
+        pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2', [-entry.amount, entry.envelope_id], (err) => {
+            pool.query('DELETE FROM ledger WHERE id = $1', [entry.id], (err2) => {
+                return res.status(200).send('Deleted single transfer ledger entry');
+            });
+        });
+        return;
+    }
+    // Get the referenced entry
+    pool.query('SELECT * FROM ledger WHERE id = $1', [refId], (err, refResult) => {
+        if (err || refResult.rows.length === 0) {
+            // If not found, just delete this entry
+            pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2', [-entry.amount, entry.envelope_id], (err2) => {
+                pool.query('DELETE FROM ledger WHERE id = $1', [entry.id], (err3) => {
+                    return res.status(200).send('Deleted transfer ledger entry (reference missing)');
+                });
+            });
+            return;
+        }
+        const refEntry = refResult.rows[0];
+        // Reverse budgets for both envelopes
+        pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2', [-entry.amount, entry.envelope_id], (err2) => {
+            pool.query('UPDATE envelopes SET budget = budget + $1 WHERE id = $2', [-refEntry.amount, refEntry.envelope_id], (err3) => {
+                // Delete both ledger entries
+                pool.query('DELETE FROM ledger WHERE id = $1', [entry.id], (err4) => {
+                    pool.query('DELETE FROM ledger WHERE id = $1', [refEntry.id], (err5) => {
+                        return res.status(200).send('Deleted both transfer ledger entries');
+                    });
+                });
+            });
+        });
+    });
+}
 
 
 // Start the server
